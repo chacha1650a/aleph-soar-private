@@ -42,3 +42,7 @@ htmlcov/
 # Per-person AI settings and temporary handoffs
 .claude/settings.local.json
 /.local/
+
+# 로컬 랩
+/local/.env
+/local/wazuh/upstream/

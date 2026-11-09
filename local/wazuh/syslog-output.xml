@@ -1,0 +1,7 @@
+<!-- wazuh_manager.conf의 </ossec_config> 앞에 들어가는 블록. setup.ps1이 없으면 넣는다. -->
+<syslog_output>
+  <server>wazuh-relay</server>
+  <port>5514</port>
+  <level>5</level>
+  <format>json</format>
+</syslog_output>

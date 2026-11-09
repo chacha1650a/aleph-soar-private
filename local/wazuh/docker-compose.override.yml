@@ -1,0 +1,21 @@
+# 공식 wazuh-docker v4.9.0 single-node 위에 덮어쓰는 로컬 설정.
+# - 버전은 4.9.0 고정(A의 agent 4.9.0-1과 맞춤).
+# - 대시보드는 443 대신 127.0.0.1:8443으로 열어 Graylog(9000)·n8n(5678)과 겹치지 않게 한다.
+# - 인덱서 9200은 호스트에 열지 않는다(Graylog의 OpenSearch와 혼동 방지).
+# - 수집 1514/1515와 API 55000은 BIND_IP로 연다.
+services:
+  wazuh.manager:
+    ports: !override
+      - "${BIND_IP:-127.0.0.1}:1514:1514"
+      - "${BIND_IP:-127.0.0.1}:1515:1515"
+      - "${BIND_IP:-127.0.0.1}:55000:55000"
+    networks: [default, wazuh-net]
+  wazuh.indexer:
+    ports: !reset []
+  wazuh.dashboard:
+    ports: !override
+      - "127.0.0.1:8443:5601"
+networks:
+  wazuh-net:
+    external: true
+    name: wazuh-net

@@ -1,0 +1,23 @@
+# Wazuh syslog_output(UDP) -> Graylog Raw TCP 5514 중계기.
+# Wazuh는 UDP로만 보내고 1,400바이트를 넘는 FIM 경보는 UDP로 유실되므로 C가 만든 중계기를 그대로 쓴다.
+name: wazuh-relay
+services:
+  wazuh-relay:
+    image: node:20-alpine
+    container_name: wazuh-relay
+    restart: unless-stopped
+    command: ["node", "/app/relay.js"]
+    environment:
+      LISTEN_PORT: "5514"
+      TARGET_HOST: soc-graylog   # 같은 PC의 Graylog 컨테이너(네트워크 soc-net)
+      TARGET_PORT: "5514"
+    volumes:
+      - ../../lab/s7/relay/wazuh-udp-to-tcp.js:/app/relay.js:ro
+    networks: [soc-net, wazuh-net]
+networks:
+  soc-net:
+    external: true
+    name: soc-net
+  wazuh-net:
+    external: true
+    name: wazuh-net
