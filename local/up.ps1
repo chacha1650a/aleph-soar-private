@@ -1,4 +1,4 @@
-# 로컬 랩 시작: Graylog -> n8n -> Wazuh -> 중계기. 순서대로 시작하고 상태를 보여 준다.
+﻿# 로컬 랩 시작: Graylog -> n8n -> Wazuh -> 중계기. 순서대로 시작하고 상태를 보여 준다.
 param([switch]$Down)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
@@ -19,7 +19,7 @@ if ($Down) {
 }
 if (-not (Test-Path (Join-Path $gl '.env'))) { throw 'infra/graylog/.env가 없습니다. infra/graylog/README.md의 실행 순서 1~3을 먼저 하세요.' }
 if (-not (Test-Path $sn)) { throw 'Wazuh가 준비되지 않았습니다. local/wazuh/setup.ps1을 먼저 실행하세요.' }
-docker volume inspect n8n_data *> $null; if ($LASTEXITCODE -ne 0) { docker volume create n8n_data | Out-Null }
+if (-not (docker volume ls -q --filter name=^n8n_data$)) { docker volume create n8n_data | Out-Null }
 docker compose -f (Join-Path $gl 'docker-compose.yml') --env-file (Join-Path $gl '.env') up -d
 docker compose -f $n8 up -d
 docker compose -f $sn -f (Join-Path $wz 'docker-compose.override.yml') up -d
