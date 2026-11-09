@@ -1,0 +1,2 @@
+2026/10/28 15:50:01 INFO: n8n-s7 172.21.0.1 "PUT /active-response" with parameters {"agents_list": "010"} and body {"command": "!s7-restore-ar", "arguments": ["zz_s7_ar01.html", "ar-01"]} done in 0.603s: 200
+2026/10/28 15:52:45 INFO: n8n-s7 172.21.0.1 "PUT /active-response" with parameters {"agents_list": "010"} and body {"command": "!s7-restore-ar", "arguments": ["index.html", "ar-02"]} done in 0.075s: 200

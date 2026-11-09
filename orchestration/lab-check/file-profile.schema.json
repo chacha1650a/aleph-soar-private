@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "adapter": {
+      "const": "file-export-v1"
+    },
+    "source_root": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "export": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    }
+  },
+  "required": [
+    "adapter",
+    "source_root",
+    "export"
+  ],
+  "additionalProperties": false
+}

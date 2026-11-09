@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "scope": "in_process_real_flask_sqlite",
+  "backend_revision": "dea42c133030ca42592f5d5874b5f269d136cc9a",
+  "source_packet_revision": "9e2ca450b8ae856e820d85b64c78618d60515bf4",
+  "actual_device_calls": 0,
+  "network_transport_exercised": false,
+  "live_n8n_verified": false,
+  "graylog_verified": false,
+  "mysql_verified": false,
+  "deployment_ready": false,
+  "manual_fixture_release": true,
+  "cases": [
+    {
+      "name": "normal",
+      "passed": true,
+      "portal_post_attempts": 2,
+      "block_events": 1,
+      "release_events": 1,
+      "final_attack_status": 200,
+      "normal_login_during_block": 200,
+      "c_effect_recorded": true,
+      "c_restored": true
+    },
+    {
+      "name": "portal_ack_loss",
+      "passed": true,
+      "portal_post_attempts": 3,
+      "block_events": 1,
+      "release_events": 1,
+      "final_attack_status": 200,
+      "normal_login_during_block": 200,
+      "c_effect_recorded": true,
+      "c_restored": true
+    },
+    {
+      "name": "record_failure",
+      "passed": true,
+      "portal_post_attempts": 2,
+      "block_events": 1,
+      "release_events": 1,
+      "final_attack_status": 200,
+      "normal_login_during_block": 200,
+      "c_effect_recorded": true,
+      "c_restored": true
+    },
+    {
+      "name": "record_ack_loss",
+      "passed": true,
+      "portal_post_attempts": 2,
+      "block_events": 1,
+      "release_events": 1,
+      "final_attack_status": 200,
+      "normal_login_during_block": 200,
+      "c_effect_recorded": true,
+      "c_restored": true
+    },
+    {
+      "name": "closed_ack",
+      "passed": true,
+      "portal_post_attempts": 2,
+      "block_events": 1,
+      "release_events": 1,
+      "final_attack_status": 200,
+      "normal_login_during_block": 200,
+      "c_effect_recorded": true,
+      "c_restored": true
+    },
+    {
+      "name": "bad_portal_key",
+      "passed": true,
+      "portal_post_attempts": 1,
+      "block_events": 0,
+      "final_attack_status": 200,
+      "expected_outcome": "rejected_no_action"
+    },
+    {
+      "name": "detected_failure",
+      "passed": true,
+      "expected_outcome": "held_before_action",
+      "portal_post_attempts": 0,
+      "block_events": 0,
+      "final_attack_status": 200
+    }
+  ],
+  "harness_sha256": "a395f4593acd24cb485a1428d497a99da8d510965a15ec32ac9b7dfcb6d37cf0",
+  "code_runner_sha256": "d8062ab60822c47f26bec380a444991e36ec7bdee24a55f6e56f48a3c5ace32c",
+  "workflow_sha256": {
+    "infra/n8n/workflows/haedam-10-result-log.json": "4b5667ccc47d43313e337d08e96df20fb8a6b537cc88f927294269892e059508",
+    "infra/n8n/workflows/haedam-11-discord-notify.json": "50174b0efaab89012b415d691b8d4d7b234a45ba55e06b1ffe29f447701b46a5",
+    "infra/n8n/workflows/haedam-12-portal-ip-block.json": "43c2b4c250bbb34be9d18b1284e6dadd854399f16d58ed70f18a94fa69ad8b34",
+    "infra/n8n/workflows/haedam-30-s1-main.json": "1e422ed09fe6005d32c03951307a6ad2b1482a34222ccc789732ce247033328e"
+  },
+  "remaining": [
+    "Graylog rule and webhook auth",
+    "n8n engine and HTTP expression bindings",
+    "VPN/NAT real source and normal clients",
+    "MySQL deployment and independent school restoration"
+  ]
+}

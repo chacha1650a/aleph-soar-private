@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "run_id": "fixture-s10",
+  "scenario_id": "S10",
+  "profile_id": "s10-normalization-v1",
+  "profile": "precheck",
+  "environment": "fixture",
+  "required_checks": [
+    "B.raw",
+    "D.received",
+    "D.normalized"
+  ],
+  "expected_versions": {
+    "B": "synthetic-v1",
+    "D": "synthetic-v1"
+  },
+  "source_ip": "203.0.113.10",
+  "target_ip": "203.0.113.1",
+  "input_start": "2026-10-23T10:00:00+09:00",
+  "input_end": "2026-10-23T10:00:02+09:00",
+  "observation_end": "2026-10-23T10:15:02+09:00",
+  "prepare_valid_for_seconds": 60,
+  "expected_input_count": 1,
+  "expected_event_count": 1,
+  "input_owner": "B",
+  "reviewer": "A",
+  "policy_sha256": "21ee147a859bc96e8bd612533a953087e40f4fa8631f91a8846268879afa5465"
+}

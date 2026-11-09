@@ -1,0 +1,407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "card_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "environment": {
+      "enum": [
+        "fixture",
+        "lab"
+      ]
+    },
+    "origin": {
+      "enum": [
+        "synthetic",
+        "reported",
+        "direct"
+      ]
+    },
+    "seat": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "phase": {
+      "enum": [
+        "prepare",
+        "final"
+      ]
+    },
+    "attempt_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "collector_version": {
+      "const": "file-export-v1"
+    },
+    "vantage_id": {
+      "enum": [
+        "portal-vm",
+        "boundary-host",
+        "ticket-host",
+        "graylog-host",
+        "unverified"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "query_start": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "query_end": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "clock_uncertainty_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 86400
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check_id": {
+            "type": "string",
+            "pattern": "^[A-D][.][a-z0-9_]+$"
+          },
+          "availability": {
+            "enum": [
+              "available",
+              "unavailable",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "definition_state": {
+            "enum": [
+              "active",
+              "inactive",
+              "undefined",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "query_status": {
+            "enum": [
+              "ok",
+              "failed",
+              "incomplete",
+              "not_run"
+            ]
+          },
+          "coverage": {
+            "enum": [
+              "complete",
+              "partial",
+              "unknown"
+            ]
+          },
+          "count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "reason_code": {
+            "enum": [
+              "NONE",
+              "STORE_NOT_RUNNING",
+              "NOT_CONFIGURED",
+              "SOURCE_UNAVAILABLE",
+              "QUERY_FAILED",
+              "PARTIAL_COVERAGE",
+              "DEFINITION_UNDEFINED",
+              "PERMISSION_DENIED",
+              "OBSERVATION_PENDING",
+              "UNKNOWN",
+              "COLLECTOR_TIMEOUT",
+              "COLLECTOR_FAILED",
+              "SOURCE_PARSE_INCOMPLETE"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "src_ip": {
+                  "type": "string",
+                  "format": "ipv4"
+                },
+                "fields": {
+                  "type": "object",
+                  "properties": {
+                    "rule": {
+                      "enum": [
+                        "web-scan",
+                        "login-bruteforce",
+                        "pfsense-block"
+                      ]
+                    },
+                    "http_status": {
+                      "type": "integer",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "interface": {
+                      "enum": [
+                        "em0"
+                      ]
+                    },
+                    "direction": {
+                      "enum": [
+                        "in",
+                        "out"
+                      ]
+                    },
+                    "action": {
+                      "enum": [
+                        "block",
+                        "pass"
+                      ]
+                    },
+                    "tracker": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "icmp_id": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535
+                    },
+                    "icmp_seq": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535
+                    },
+                    "dst_ip": {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    "proto": {
+                      "enum": [
+                        "ICMP",
+                        "TCP",
+                        "UDP"
+                      ]
+                    }
+                  },
+                  "required": [],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "key",
+                "at",
+                "src_ip",
+                "fields"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 10000
+          },
+          "executions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "src_ip": {
+                  "type": "string",
+                  "format": "ipv4"
+                },
+                "dry_run": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "http_executed": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "http_status": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 100,
+                  "maximum": 599
+                },
+                "target_effect": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "at",
+                "src_ip",
+                "dry_run",
+                "http_executed",
+                "http_status",
+                "target_effect"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 10000
+          },
+          "value": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "check_id",
+          "availability",
+          "definition_state",
+          "query_status",
+          "coverage",
+          "count",
+          "reason_code"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 30
+    },
+    "collection": {
+      "type": "object",
+      "properties": {
+        "adapter": {
+          "enum": [
+            "jsonl-events-v1",
+            "filterlog-ipv4-icmp-v1"
+          ]
+        },
+        "read_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "metadata_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "profile_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2097152
+        },
+        "source_truncated": {
+          "type": "boolean"
+        },
+        "source_changed": {
+          "type": "boolean"
+        },
+        "line_limit_hit": {
+          "type": "boolean"
+        },
+        "rejected_lines": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "adapter",
+        "read_sha256",
+        "metadata_sha256",
+        "profile_sha256",
+        "source_bytes",
+        "source_truncated",
+        "source_changed",
+        "line_limit_hit",
+        "rejected_lines"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "run_id",
+    "card_sha256",
+    "environment",
+    "origin",
+    "seat",
+    "phase",
+    "attempt_id",
+    "collector_version",
+    "vantage_id",
+    "version",
+    "observed_at",
+    "query_start",
+    "query_end",
+    "clock_uncertainty_seconds",
+    "checks"
+  ],
+  "additionalProperties": false
+}

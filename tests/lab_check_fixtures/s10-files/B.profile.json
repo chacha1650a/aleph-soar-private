@@ -1,0 +1,12 @@
+{
+  "adapter": "filterlog-ipv4-icmp-v1",
+  "source_root": ".",
+  "source": "B.filterlog.txt",
+  "metadata": "B.metadata.json",
+  "max_lines": 1000,
+  "check_ids": [
+    "B.raw"
+  ],
+  "source_year": 2026,
+  "source_utc_offset": "+09:00"
+}

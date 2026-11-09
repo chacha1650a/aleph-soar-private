@@ -1,0 +1,168 @@
+{
+  "s10-normalization-v1": {
+    "scenario_id": "S10",
+    "profile": "precheck",
+    "scope": "normalization_only",
+    "checks": [
+      {
+        "id": "B.raw",
+        "seat": "B",
+        "kind": "events"
+      },
+      {
+        "id": "D.received",
+        "seat": "D",
+        "kind": "events",
+        "reference": "B.raw",
+        "fields": []
+      },
+      {
+        "id": "D.normalized",
+        "seat": "D",
+        "kind": "events",
+        "reference": "B.raw",
+        "fields": [
+          "rule",
+          "interface",
+          "direction",
+          "action",
+          "tracker",
+          "icmp_id",
+          "icmp_seq",
+          "dst_ip",
+          "proto"
+        ]
+      }
+    ]
+  },
+  "s8-baseline-v1": {
+    "scenario_id": "S8",
+    "profile": "baseline",
+    "scope": "baseline_observation",
+    "checks": [
+      {
+        "id": "A.events",
+        "seat": "A",
+        "kind": "events"
+      },
+      {
+        "id": "B.input",
+        "seat": "B",
+        "kind": "count",
+        "expected": "input"
+      },
+      {
+        "id": "C.store",
+        "seat": "C",
+        "kind": "availability",
+        "expected": "unavailable"
+      },
+      {
+        "id": "C.tickets",
+        "seat": "C",
+        "kind": "count",
+        "expected": 0,
+        "absent_store_allowed": true
+      },
+      {
+        "id": "D.received",
+        "seat": "D",
+        "kind": "events",
+        "reference": "A.events",
+        "fields": []
+      },
+      {
+        "id": "D.normalized",
+        "seat": "D",
+        "kind": "events",
+        "reference": "A.events",
+        "fields": [
+          "rule",
+          "http_status"
+        ]
+      },
+      {
+        "id": "D.definition",
+        "seat": "D",
+        "kind": "definition",
+        "expected": "undefined"
+      },
+      {
+        "id": "D.n8n",
+        "seat": "D",
+        "kind": "response",
+        "expected": "none"
+      }
+    ]
+  },
+  "s8-postchange-v1": {
+    "scenario_id": "S8",
+    "profile": "postchange",
+    "scope": "postchange_observation",
+    "checks": [
+      {
+        "id": "A.events",
+        "seat": "A",
+        "kind": "events"
+      },
+      {
+        "id": "B.input",
+        "seat": "B",
+        "kind": "count",
+        "expected": "input"
+      },
+      {
+        "id": "C.store",
+        "seat": "C",
+        "kind": "availability",
+        "expected": "available"
+      },
+      {
+        "id": "C.tickets",
+        "seat": "C",
+        "kind": "count",
+        "expected": 1,
+        "absent_store_allowed": false
+      },
+      {
+        "id": "D.received",
+        "seat": "D",
+        "kind": "events",
+        "reference": "A.events",
+        "fields": []
+      },
+      {
+        "id": "D.normalized",
+        "seat": "D",
+        "kind": "events",
+        "reference": "A.events",
+        "fields": [
+          "rule",
+          "http_status"
+        ]
+      },
+      {
+        "id": "D.definition",
+        "seat": "D",
+        "kind": "definition",
+        "expected": "active"
+      },
+      {
+        "id": "D.n8n",
+        "seat": "D",
+        "kind": "response",
+        "expected": "actual"
+      },
+      {
+        "id": "A.effect",
+        "seat": "A",
+        "kind": "fact"
+      },
+      {
+        "id": "A.restored",
+        "seat": "A",
+        "kind": "fact"
+      }
+    ]
+  }
+}

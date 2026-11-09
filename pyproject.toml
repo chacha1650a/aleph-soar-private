@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aleph-soar"
+version = "0.1.0"
+description = "NoBugs ALEPH shared team workspace and application scaffold"
+requires-python = ">=3.12"
+dependencies = ["Flask>=3.1,<4"]
+
+[project.optional-dependencies]
+dev = ["pytest>=9,<10", "jsonschema[format-nongpl]>=4.23,<5", "PyYAML>=6,<7", "setuptools>=75"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+aleph_soar = ["templates/*.html", "static/*.css"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["services/ticket-store"]
+addopts = "--import-mode=importlib"

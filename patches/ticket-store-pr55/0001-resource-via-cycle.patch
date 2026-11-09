@@ -1,0 +1,631 @@
+diff --git a/contracts/ticket-examples/responses.json b/contracts/ticket-examples/responses.json
+index 5097ee7d595b58cb34a80c476e3be2bf21744c3b..1013a7ae703a54ffe837bc97d4e61416e46f1afe 100644
+--- a/contracts/ticket-examples/responses.json
++++ b/contracts/ticket-examples/responses.json
+@@ -53,6 +53,25 @@
+       }
+     ]
+   },
++  "active_resource_hold_release": {
++    "ok": true,
++    "resource": {"asset_id": "haedam-portal", "via": "portal", "action": "block", "target": "203.0.113.11"},
++    "tickets": [
++      {"seat": "A", "ticket_id": "T-20261024-0001", "status": "responding", "active_actions": [
++        {"bot": "112", "via": "portal", "action": "block", "target": "203.0.113.11"}]},
++      {"seat": "D", "ticket_id": "T-20261024-0002", "status": "responding", "active_actions": [
++        {"bot": "112", "via": "portal", "action": "block", "target": "203.0.113.11"}]}
++    ]
++  },
++  "active_resource_none": {
++    "ok": true,
++    "resource": {"asset_id": "haedam-portal", "via": "portal", "action": "block", "target": "203.0.113.12"},
++    "tickets": []
++  },
++  "record_cycle_conflict": {
++    "ok": false,
++    "error": {"code": "INVALID_TRANSITION", "message": "restored ticket must be closed before recording a new application cycle"}
++  },
+   "error_validation": {
+     "ok": false,
+     "error": {
+diff --git a/contracts/ticket-record.schema.json b/contracts/ticket-record.schema.json
+index 3756047fb590a2f6e0d597508b608bcea28f4ddf..5fe9f198d1a0e4d5c76a8cd292b3994aeb50b889 100644
+--- a/contracts/ticket-record.schema.json
++++ b/contracts/ticket-record.schema.json
+@@ -1,7 +1,7 @@
+ {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$id": "urn:nobugs:aleph:ticket-record:1.0",
+-  "title": "Draft 114 ticket store record request v1.0 (not implemented)",
++  "title": "Draft 114 ticket store record request v1.0 (candidate implementation)",
+   "description": "Body of POST /api/v1/tickets/record sent by the D n8n result-log with X-Response-Key and Idempotency-Key headers. The key is only for replay dedup; stage decides whether a line is added or updated. n8n never sends status, ticket_id or dedup_key.",
+   "type": "object",
+   "additionalProperties": false,
+diff --git a/contracts/ticket-response.schema.json b/contracts/ticket-response.schema.json
+index 7f0923ce7f1d382fa284f69207a071afdb500efc..d6db37045a41335b82f8522ed76861a7ddd4a4bb 100644
+--- a/contracts/ticket-response.schema.json
++++ b/contracts/ticket-response.schema.json
+@@ -7,6 +7,7 @@
+     {"$ref": "#/$defs/record_ok"},
+     {"$ref": "#/$defs/check_seat_ok"},
+     {"$ref": "#/$defs/check_all_ok"},
++    {"$ref": "#/$defs/active_resource_ok"},
+     {"$ref": "#/$defs/list_ok"},
+     {"$ref": "#/$defs/ticket_ok"},
+     {"$ref": "#/$defs/error"}
+@@ -16,7 +17,7 @@
+     "ticket_id": {"type": "string", "pattern": "^T-[0-9]{8}-[0-9]{4}$"},
+     "action_ref": {
+       "type": "object", "additionalProperties": false,
+-      "required": ["bot", "action", "target"],
++      "required": ["bot", "via", "action", "target"],
+       "properties": {
+         "bot": {"type": "string", "pattern": "^([0-9]{3}|manual)$"},
+         "action": {"type": "string", "pattern": "^[a-z][a-z_]{1,31}$"},
+@@ -53,7 +54,7 @@
+       "else": {"properties": {"ticket_id": {"type": "string"}, "status": {"type": "string"}}}
+     },
+     "check_all_ok": {
+-      "description": "GET /api/v1/tickets/open without seat: open tickets of every seat for this group_key, used to hold a release.",
++      "description": "GET /api/v1/tickets/open without seat: open tickets for this group_key only. Not a cross-resource release guard; use /active.",
+       "type": "object", "additionalProperties": false,
+       "required": ["ok", "tickets"],
+       "properties": {
+@@ -70,6 +71,26 @@
+         }}
+       }
+     },
++    "resource": {
++      "type": "object", "additionalProperties": false,
++      "required": ["asset_id", "via", "action", "target"],
++      "properties": {
++        "asset_id": {"type": "string", "minLength": 1, "maxLength": 300, "pattern": "^[^\\u0000-\\u001f\\u007f]+$"},
++        "via": {"enum": ["portal", "wazuh-ar", "pfsense", "manual"]},
++        "action": {"type": "string", "pattern": "^[a-z][a-z_]{1,31}$"},
++        "target": {"type": "string", "minLength": 1, "maxLength": 300, "pattern": "^[^\\u0000-\\u001f\\u007f]+$"}
++      }
++    },
++    "active_resource_ok": {
++      "description": "Authenticated GET /api/v1/tickets/active with exactly asset_id, via, action, target. All matching live claims across seats/group keys/bots, including closed tickets with unreleased actions. Read snapshot only; no permission or reservation to release.",
++      "type": "object", "additionalProperties": false,
++      "required": ["ok", "resource", "tickets"],
++      "properties": {
++        "ok": {"const": true},
++        "resource": {"$ref": "#/$defs/resource"},
++        "tickets": {"$ref": "#/$defs/check_all_ok/properties/tickets"}
++      }
++    },
+     "list_ok": {
+       "description": "GET /api/v1/tickets (dashboard). counts follow the same sample filter as items.",
+       "type": "object", "additionalProperties": false,
+@@ -111,7 +132,7 @@
+       "properties": {"ok": {"const": true}, "ticket": {"$ref": "urn:nobugs:aleph:ticket:1.0"}}
+     },
+     "error": {
+-      "description": "400 VALIDATION_ERROR, 401 UNAUTHORIZED (n8n key), 403 FORBIDDEN (close Origin/token), 404 NOT_FOUND, 409 IDEMPOTENCY_CONFLICT (record) or INVALID_TRANSITION (close), 500/503 SERVER_ERROR.",
++      "description": "400 VALIDATION_ERROR, 401 UNAUTHORIZED (n8n key), 403 FORBIDDEN (close Origin/token), 404 NOT_FOUND, 409 IDEMPOTENCY_CONFLICT (record) or INVALID_TRANSITION (close or record requiring explicit cycle/scope resolution), 500/503 SERVER_ERROR.",
+       "type": "object", "additionalProperties": false,
+       "required": ["ok", "error"],
+       "properties": {
+diff --git a/docs/API-CONTRACT.md b/docs/API-CONTRACT.md
+index fd947be951e16209b30f9692b88006f08c59273b..d64df72f911ff038d3350b19c322f4e2c5857e8b 100644
+--- a/docs/API-CONTRACT.md
++++ b/docs/API-CONTRACT.md
+@@ -29,13 +29,14 @@
+ 
+ 위 경로는 기능 구현을 약속한 공개 API가 아닙니다. P01 작업에서 요청·응답·오류 예시를 먼저 확정합니다. 현재 구현되지 않은 경로는 404를 반환합니다.
+ 
+-## 티켓 저장소(114) — 미구현
++## 티켓 저장소(114) — 별도 후보 구현·로컬 시험
+ 
+ C가 맡는 별도 서비스(`services/ticket-store`, C PC 컨테이너)이며, 위 capstone 스켈레톤 앱의 경로가 아닙니다. 10/23 브랜치 `feat/ticket-store`에 구현했고 로컬 컨테이너에서만 시험했습니다. D n8n과 팀 VPN으로 연결한 시험은 아직 하지 않았습니다. 설계·결정 근거는 [C 티켓 저장소 설계](C-티켓저장소-설계.md)입니다(2026-10-23 D 확인 반영, 구현 10/26·가동 10/29 전 목표).
+ 
+ | 경로 | 상태 | 부르는 쪽 | 인증·공개 범위(예정, 미시험) |
+ | --- | --- | --- | --- |
+ | `GET /api/v1/tickets/open?seat=&group_key=` | 구현(로컬 시험) | D n8n check | `X-Response-Key`, `10.250.0.3:8088` |
++| `GET /api/v1/tickets/active?asset_id=&via=&action=&target=` | 10/24 집 패치 제안(합성 로컬 시험) | D n8n 자원 조회 | 기존 n8n 인증·포트 재사용, 실제 연결 미검증 |
+ | `POST /api/v1/tickets/record` | 구현(로컬 시험) | D n8n record | `X-Response-Key` + `Idempotency-Key`, `10.250.0.3:8088` |
+ | `GET /api/v1/tickets` | 구현(로컬 시험) | C 보안 대시보드 | 키 없음, `127.0.0.1:8089` |
+ | `GET /api/v1/tickets/{ticket_id}` | 구현(로컬 시험) | C 보안 대시보드 | 키 없음, `127.0.0.1:8089` |
+@@ -45,10 +46,11 @@ C가 맡는 별도 서비스(`services/ticket-store`, C PC 컨테이너)이며,
+ 
+ - 열린 티켓은 `(seat, group_key)`마다 하나입니다. `group_key`는 A = `username`, B·D = `src_ip`, C = `{asset_id}:{file_key}`.
+ - `status`(`open → responding → verified → restored → closed`)는 저장소가 기록으로 정합니다. n8n은 `status`·`ticket_id`·`dedup_key`를 보내지 않습니다. `verified`는 `effect_verified = true`일 때만 됩니다.
+-- record 본문의 `stage`(`detected`/`applied`/`effect`/`released`)로 줄 추가·갱신을 정합니다. `effect`·`released`는 같은 `(bot, action, target)` 줄을 갱신합니다. `Idempotency-Key`(예: `{n8n 실행 ID}-{stage}`)는 재전송 중복 방지에만 쓰고, 저장소는 줄을 만든 요청의 키를 `action_id`로 남깁니다. `detected` 단계를 쓸지는 D 확인 전입니다.
++- record 본문의 `stage`로 줄 추가·갱신을 정합니다. 10/24 집 패치 제안은 현재 활성 `(bot, via, action, target)`을 구분합니다. 효과는 같은 활성 동작, 원복은 짝 동작 하나만 처리하며 다른 경로/동작을 지우지 않습니다. `Idempotency-Key`는 같은 요청의 재전송 중복 방지에 쓰고 줄을 만든 키를 `action_id`로 남깁니다. 해제 뒤 새 적용은 과거 중복이 아닙니다. 이미 `restored`인 티켓의 새 이벤트/적용은 409 `INVALID_TRANSITION`이며 사람 닫기 후 새 이벤트로 새 티켓을 만듭니다. C/D 정책 채택과 실제 소비자 적용 전입니다.
++- `/open`은 사건 묶음 조회입니다. 원복 전 자원 조회는 `/active`의 4개 필드를 모두 정확히 주고 자기 ticket_id 하나만 제외합니다. 다른 봇/사람의 조치도 포함하고 닫힌 티켓에도 미해제 조치가 남으면 반환합니다. 오류/미가동은 0건이 아닙니다. 이 조회는 해제 허가나 원자적 예약이 아니며 실제 원복의 자원별 직렬화/소유권은 D 적용 조건입니다. 자원 ID·짝 동작·세부 오류 분기는 [설계 3-1·5절](C-티켓저장소-설계.md)을 따릅니다.
+ - `bot`은 문자열(`"112"`, 사람 처리 `"manual"`), `via`는 `portal`/`wazuh-ar`/`pfsense`/`manual`입니다(10/23 D 확정).
+ - n8n 경로 응답은 `{"ok": true, "ticket_id", "created", "duplicate", "status"}`, 오류는 `{"ok": false, "error": {"code", "message"}}`입니다(10/23 D 확정, D haedam-10과 같은 모양). 포털 대응 API의 `{"success", "data"}`와 다릅니다. 대시보드 목록(`{"ok", "count", "items", "counts", "last_record_at"}`)과 상세·닫기(`{"ok", "ticket"}`)도 같은 `ok` 모양입니다.
+-- 오류 코드: 400 `VALIDATION_ERROR`(본문 64KB 초과는 413), 401 `UNAUTHORIZED`(n8n 키), 403 `FORBIDDEN`(닫기의 `Origin`·화면 토큰), 404 `NOT_FOUND`, 409 `IDEMPOTENCY_CONFLICT`(record) · `INVALID_TRANSITION`(닫기), 500 `SERVER_ERROR`. 예상하지 못한 오류도 HTML이 아니라 이 모양으로 돌려줍니다(n8n 재시도 분기가 읽을 수 있게).
++- 오류 코드: 400 `VALIDATION_ERROR`(본문 64KB 초과는 413), 401 `UNAUTHORIZED`(n8n 키), 403 `FORBIDDEN`(닫기의 `Origin`·화면 토큰), 404 `NOT_FOUND`, 409 `IDEMPOTENCY_CONFLICT`(record) · `INVALID_TRANSITION`(닫기 또는 record의 주기/자산 충돌), 500 `SERVER_ERROR`. 409는 원인 해결 없이 키를 바꾸거나 자동 반복하지 않습니다.
+ - n8n check·record는 `data_origin: live` 티켓만 보고 바꿉니다. 샘플 티켓은 화면 확인용입니다.
+ - 재시도는 500·503·시간 초과(10초)만, 같은 키로 최대 3회(2·4·8초)입니다. n8n 기본 재시도와 달라 D가 오류 분기로 만듭니다.
+ - 기존 [incident.schema.json](../contracts/incident.schema.json) v1.0은 바꾸지 않았습니다. 티켓은 `username`이 없는 사건(S7·S12)과 5단계 상태를 담아야 해서 별도 계약입니다.
+diff --git "a/docs/C-\355\213\260\354\274\223\354\240\200\354\236\245\354\206\214-\354\204\244\352\263\204.md" "b/docs/C-\355\213\260\354\274\223\354\240\200\354\236\245\354\206\214-\354\204\244\352\263\204.md"
+index cab0b1b2a3fea46f61fe00000232b73f09998893..49c263611fc6521b616c6338720112055ca2ff79 100644
+--- "a/docs/C-\355\213\260\354\274\223\354\240\200\354\236\245\354\206\214-\354\204\244\352\263\204.md"
++++ "b/docs/C-\355\213\260\354\274\223\354\240\200\354\236\245\354\206\214-\354\204\244\352\263\204.md"
+@@ -106,7 +106,8 @@ D result-log 설계의 출력 형식을 그대로 쓴다. `event_id`·`asset_id`
+ | 사람이 닫음 | `closed` | — (닫기 경로는 6절과 함께 정함) |
+ 
+ - **`verified`는 `effect_verified = true`일 때만** 간다(`responding`에서만). `restored`는 `responding`·`verified`에서만 간다. 대응 API가 "성공"이라고 답한 것과 실제 효과(S7: 원본 해시·404, S12: 헬스체크 회복)가 확인된 것은 다르다.
+-- 상태는 앞으로만 간다. `closed` 전까지는 같은 `(seat, group_key)`의 기록이 이 티켓에 붙고, `closed` 뒤에 오면 새 티켓이 된다.
++- 상태는 앞으로만 간다. 같은 `(seat, group_key)`의 기록은 원칙적으로 이 티켓에 붙는다. **10/24 집 패치 제안:** `restored`에서 새 이벤트(탐지 포함) 또는 새 적용은 409 `INVALID_TRANSITION`. 사람이 기존 티켓을 닫은 뒤 새 이벤트로 새 티켓을 만든다. 거부된 요청의 이벤트·조치·멱등 키는 저장하지 않아 원인 해결 후 같은 키/본문으로 기록을 재시도할 수 있다. 같은 키 재전송은 최초 응답을 그대로 반환한다. C/D 채택·현장 검증 전이다.
++- 원복 줄을 기록해도 다른 활성 조치가 남으면 `restored`로 바꾸지 않는다. `verified`는 기존 티켓 수준의 최초 효과 확인이며, 모든 조치의 효과를 뜻하지 않는다. 조치별 `effect_verified`를 따로 확인한다.
+ 
+ ### 2-1. 이상한 경우
+ 
+@@ -115,7 +116,7 @@ D result-log 설계의 출력 형식을 그대로 쓴다. `event_id`·`asset_id`
+ | ① 대응 실패 | `failed` 줄을 남기고 상태는 그대로. n8n이 다시 요청하거나, 수동 처리(C가 VM에서 복구 스크립트 실행, A가 기준본 복사)한 뒤 `bot: "manual"` 줄로 기록 |
+ | ② 효과 확인 실패 | `effect_verified = false`로 갱신, 상태는 `responding` 유지. 원인(기준본 오래됨, 경로 오류)을 `detail`에 남기고 ①처럼 처리 |
+ | ③ 오탐 | 조치를 되돌리고(`released`) `restored`. `reason` 끝에 `"오탐: <사유>"`. 정량평가 오탐 수에 넣음 |
+-| ④ 원복할 IP를 다른 자리도 막고 있음 | n8n이 check를 `seat` 없이 불러 다른 자리의 열린 티켓에 해제되지 않은 같은 대상 조치가 있으면 해제를 보류(D 요청, PR #50 1번). 3-1 ① |
++| ④ 원복할 자원을 다른 자리/티켓도 사용 중 | 10/24 제안 `/active`의 정확한 자원 범위로 조회하고 다른 티켓의 활성 조치가 있으면 보류. 기존 `/open?group_key=`는 자리별 묶음 키가 달라 해제 판단에 부족하다. 조회와 실제 해제는 원자적이지 않으므로 별도 실행 구간에서 직렬화/소유권을 확인해야 한다 |
+ 
+ - 정량평가 판정: C(대응·효과)는 `verified`까지, E(원복)는 `restored`까지 가야 통과로 센다.
+ 
+@@ -128,6 +129,7 @@ D의 공통 하위 워크플로(result-log, `haedam-10`)는 **check → 대응 
+ | # | 경로 | 부르는 쪽 | 키 | 열리는 곳 |
+ | --- | --- | --- | --- | --- |
+ | ① | `GET /api/v1/tickets/open?seat=&group_key=` | D n8n(check) | `X-Response-Key` | `10.250.0.3:8088` |
++| ①-a | `GET /api/v1/tickets/active?asset_id=&via=&action=&target=` | D n8n(자원 조회, 10/24 집 패치 제안) | `X-Response-Key` | 기존 n8n 앱·포트 재사용 |
+ | ② | `POST /api/v1/tickets/record` | D n8n(record) | `X-Response-Key` + `Idempotency-Key` | `10.250.0.3:8088` |
+ | ③ | `GET /api/v1/tickets` | 대시보드 | 없음 | `127.0.0.1:8089` |
+ | ④ | `GET /api/v1/tickets/{ticket_id}` | 대시보드 | 없음 | `127.0.0.1:8089` |
+@@ -145,12 +147,12 @@ D의 공통 하위 워크플로(result-log, `haedam-10`)는 **check → 대응 
+ 
+ ```json
+ {"ok": true, "exists": true, "ticket_id": "T-20261024-0001", "status": "responding",
+- "applied_actions": [{"bot": "117", "action": "restore", "target": "assets/zz_s7_1024.txt", "result": "applied"}]}
++ "applied_actions": [{"bot": "117", "via": "wazuh-ar", "action": "restore", "target": "assets/zz_s7_1024.txt", "result": "applied"}]}
+ ```
+ 
+   - 없으면 404가 아니라 200 + `{"ok": true, "exists": false, "ticket_id": null, "status": null, "applied_actions": []}`
+-  - `applied_actions`에는 `applied`·`already_applied`이면서 아직 `released`되지 않은 조치만 담는다. n8n은 같은 `(bot, action, target)`이 있으면 대응을 다시 부르지 않는다.
+-- `seat`를 빼면(원복 보류 확인용): 모든 자리의 열린 티켓 중 이 `group_key`의 것.
++  - `applied_actions`에는 `applied`·`already_applied`이면서 아직 `released`되지 않은 조치만 담는다. 10/24 제안은 `via`도 항상 반환하며 n8n은 같은 `(bot, via, action, target)`을 비교한다. 같은 열린 티켓의 `asset_id` 변경은 409로 거부한다.
++- `seat`를 빼면: 모든 자리의 열린 티켓 중 이 `group_key`의 것. 사건 묶음 조회이며 다른 묶음의 같은 IP 조치를 모두 찾는 원복 안전장치는 아니다.
+ 
+ ```json
+ {"ok": true, "tickets": [
+@@ -160,6 +162,22 @@ D의 공통 하위 워크플로(result-log, `haedam-10`)는 **check → 대응 
+ 
+ - `group_key`의 `:`·`/`는 URL 인코딩해서 보낸다. n8n Query Parameters 칸이 자동 인코딩하는지는 **미확인**(D, PR #50 7번). 안 되면 check를 POST 본문으로 바꾼다.
+ 
++**①-a 자원 조회 (10/24 집 패치 제안, C/D 미채택)**
++
++`asset_id`(조치를 집행하는 자산), `via`, 적용 동작 `action`, `target` 4개를 모두 정확히 준다. 다른 인자·중복 인자·빈/잘못된 값은 400이며, 불완전한 조회를 0건으로 반환하지 않는다. **자원 조회는 bot으로 제한하지 않는다.** 다른 봇/사람이 기록한 같은 자원의 조치도 원복 보류 사유다. 조치 중복/효과/원복 줄 식별에는 bot을 포함한다. 자산 식별자는 C/D/호출자가 동일하게 정해야 하며 포털과 방화벽에 같은 이름을 임의로 쓰지 않는다.
++
++```json
++{"ok": true, "resource": {"asset_id": "haedam-portal", "via": "portal", "action": "block", "target": "203.0.113.11"},
++ "tickets": [
++   {"seat": "A", "ticket_id": "T-20261024-0001", "status": "responding", "active_actions": [{"bot": "112", "via": "portal", "action": "block", "target": "203.0.113.11"}]},
++   {"seat": "D", "ticket_id": "T-20261024-0002", "status": "responding", "active_actions": [{"bot": "112", "via": "portal", "action": "block", "target": "203.0.113.11"}]}
++ ]}
++```
++
++모든 자리·묶음의 `live`만 조회한다. **닫기 자체는 해제 증적이 아니므로 미해제 조치가 남은 `closed` 티켓도 반환**한다. 그런 과거 티켓은 현장 상태를 확인해 수동 정리해야 하며 이 패치는 자동 해제/DB 수정을 하지 않는다. 샘플은 제외한다. 정상 200·`ok:true`·일치하는 resource의 `tickets:[]`만 '기록상 활성 조치 없음'이다. 저장소 미가동/500/401/404·시간 초과·응답 형식 불일치는 판단 불가로 보류한다.
++
++자기 티켓은 **정확한 ticket_id 하나만** 제외하며 같은 자리의 다른 티켓도 보류 사유다. 조회는 단일 SQLite 읽기 스냅샷으로, 실제 대상 상태·동시 조치에 대한 잠금이나 해제 허가가 아니다. 배포 전 D가 원복 실행을 자원별로 직렬화하거나 소유권 예약을 구현·검증해야 한다. 이번 집 패치는 그 실행 계층을 구현하지 않는다.
++
+ **② record**
+ 
+ ```
+@@ -217,7 +235,7 @@ Content-Type: application/json
+ | 항목 | 값 |
+ | --- | --- |
+ | 형태 | 컨테이너 하나(Flask + SQLite), compose 파일로 실행. 데이터는 이름 있는 볼륨 |
+-| n8n 포트 | `10.250.0.3:8088` → 컨테이너 8088. **① check·② record만** 응답, 나머지는 404 |
++| n8n 포트 | `10.250.0.3:8088` → 컨테이너 8088. **① check·①-a active·② record만** 응답, 나머지는 404 |
+ | 대시보드 포트 | `127.0.0.1:8089` → 컨테이너 8089. **③·④와 화면만** 응답 |
+ | 키 | 컨테이너 환경 변수(파일은 저장소에 커밋하지 않음). n8n 쪽은 자격 증명(Header Auth)에만 |
+ | 출발지 제한 | Windows 방화벽 인바운드 TCP 8088, 원격 주소 `10.250.0.100`만 + pfSense 규칙(B에게 D→C TCP 8088 요청) |
+@@ -234,11 +252,11 @@ Content-Type: application/json
+ | 순서 | 검사 | 같으면 |
+ | --- | --- | --- |
+ | 1 | 같은 `Idempotency-Key` | 처음 응답을 그대로 돌려줌(새 줄 없음). 본문이 다르면 409 |
+-| 2 | 같은 `(seat, group_key)`의 열린 티켓(`closed` 아님) | 새 티켓 대신 그 티켓에 덧붙임. 새 `event_ids`는 목록에 추가 |
+-| 3 | 같은 티켓 안에 같은 `(bot, action, target)`가 이미 applied | `stage: effect`면 그 줄 갱신, `applied`면 `duplicate: true` 줄로 남김. `released`는 해제 조치(예: `unblock`)를 새 줄로 남기고, 같은 봇·대상의 applied 조치를 "해제됨"으로 봄 |
++| 2 | 같은 `(seat, group_key)`의 열린 티켓(`closed` 아님) | 같은 자산이면 덧붙임. 자산 변경은 409. `restored`의 새 이벤트/적용은 409로 알리고 닫은 뒤 새 주기로 기록; 자동 재시도·대상 재호출 금지 |
++| 3 | 같은 티켓의 현재 활성 `(bot, via, action, target)` | `effect`는 현재 활성 줄만 갱신. `applied`는 현재 활성 조치만 중복 처리. `released`는 동일 bot·via·target의 짝 동작 하나만 해제 (`unblock→block`, `unlock→lock`, `restore→quarantine`, 나머지는 같은 동작명). 일치 활성 줄이 없으면 400. 과거 해제 줄은 새 적용을 막지 않음 |
+ | 4 | 열린 티켓이 없는데, **같은 자리·같은 `group_key`**의 (닫힌) 티켓에 이미 있는 `event_id` | 새 티켓을 만들지 않고 그 티켓을 `duplicate: true`로 돌려줌(같은 판정 재전송 대비, D 요청). 다른 자리는 같은 이벤트를 따로 기록할 수 있어서 범위를 좁힘(10/23 구현 시험에서 발견) |
+ 
+-- n8n 노드 재시도는 실행 ID가 같아 1에서 걸린다. 사람이 Retry execution을 누르면 새 실행 ID라서 3에서 걸린다(D 설명, n8n 문서 기준, **미시험**).
++- 같은 요청 재시도는 같은 키/본문을 유지해 1에서 처리한다. 새 실행 ID는 3에서 **현재 활성 조치에 한해** 중복 처리한다. n8n의 실제 키 생성·재시도 분기는 D 확인 필요다. 효과/원복의 짝 동작은 위 제안 목록을 C/D와 확인하며, 다른 조합을 임의 추정하지 않는다.
+ - 저장소가 마지막 방어선이다. n8n check가 먼저 막더라도 저장소에서 한 번 더 막는다.
+ - 1~4는 모두 `data_origin: live` 티켓에만 적용한다. 샘플을 켠 채로 시연해도 실제 기록이 샘플 티켓에 붙지 않는다(10/23 구현 시험에서 발견).
+ 
+diff --git a/services/ticket-store/README.md b/services/ticket-store/README.md
+index ade6944ebe9909cdf40e7bd5cbacc6f839692682..e1d0b4d255c0e31c1face0c1478fce2540bbf47e 100644
+--- a/services/ticket-store/README.md
++++ b/services/ticket-store/README.md
+@@ -30,3 +30,12 @@ docker compose up -d --build
+ | `ticket_store/dashboard.py`, `templates/`, `static/` | 화면(목록·상세·닫기) | 화면 세션 |
+ 
+ 시험: `python -m pytest tests/test_ticket_store_*.py -q`
++
++## 10/24 집 패치 제안
++
++실제 장비 없이 Flask 테스트 클라이언트·임시 SQLite로 검증한 변경이다. C/D 채택·VPN 연결·실제 대응/원복 완료는 아니다.
++
++- `/open`은 사건 묶음 조회로 유지한다. 새 `/api/v1/tickets/active`는 `asset_id, via, action, target`을 모두 받아 자리/묶음/봇을 넘는 활성 조치를 조회한다. 닫힌 티켓의 미해제 조치도 포함한다. 기존 인증·앱·포트를 재사용한다.
++- `via`를 응답·중복·효과·해제 판정에 포함한다. 한 경로의 해제가 다른 경로나 동작을 지우지 않으며 남은 조치가 있으면 원복 완료로 바꾸지 않는다.
++- 원복된 티켓에 새 이벤트/적용은 409 `INVALID_TRANSITION`. 이전 티켓을 사람 닫기한 뒤 새 이벤트로 새 티켓을 만든다. D는 **실제 대응 호출 전** 이 상태를 분기해야 한다. 거부된 record의 같은 키/본문 재시도는 원인 해결 후 가능하며 대상 API를 다시 호출하라는 뜻이 아니다.
++- D의 실제 n8n 소비자 변경은 포함하지 않았다. 적용 시 [설계 3-1·5절](../../docs/C-티켓저장소-설계.md)의 자원 범위·해제 동작·오류 분기를 맞추고, 자원별 동시 실행 직렬화/소유권을 별도 검증한다. 단순 조회는 원복 허가가 아니다.
+diff --git a/services/ticket-store/ticket_store/api_n8n.py b/services/ticket-store/ticket_store/api_n8n.py
+index 3cb5e5caea2ca4a1ea125d11514b308719d425af..52511c3a452c28bd76009d4cc44898dada2ffede 100644
+--- a/services/ticket-store/ticket_store/api_n8n.py
++++ b/services/ticket-store/ticket_store/api_n8n.py
+@@ -36,6 +36,18 @@ def check():
+         return jsonify(core.check(c, group_key, seat))
+ 
+ 
++@bp.get("/active")
++def active():
++    try:
++        resource = validate.resource_query(request.args)
++    except validate.Invalid as exc:
++        return error(400, "VALIDATION_ERROR", str(exc))
++    with conn() as c:
++        # Keep the ticket and action reads in one SQLite snapshot.
++        c.execute("BEGIN")
++        return jsonify(core.active_for_resource(c, resource))
++
++
+ @bp.post("/record")
+ def record():
+     try:
+@@ -50,5 +62,7 @@ def record():
+         except core.Conflict:
+             return error(409, "IDEMPOTENCY_CONFLICT", "Idempotency-Key was used with a different body")
+         except core.NoActionToUpdate:
+-            return error(400, "VALIDATION_ERROR", "effect stage has no applied action with the same bot, action and target")
++            return error(400, "VALIDATION_ERROR", "effect/released stage has no matching active bot, via, action and target")
++        except core.InvalidTransition as exc:
++            return error(409, "INVALID_TRANSITION", str(exc))
+     return jsonify(response), status
+diff --git a/services/ticket-store/ticket_store/core.py b/services/ticket-store/ticket_store/core.py
+index 87dca66d92facd068e955c1b52c9d404f0106dc6..83e6f3be0e47c5e158022497d66e84609635de8a 100644
+--- a/services/ticket-store/ticket_store/core.py
++++ b/services/ticket-store/ticket_store/core.py
+@@ -9,6 +9,7 @@ import json
+ from . import db
+ 
+ APPLIED = ("applied", "already_applied")
++RELEASES = {"unblock": "block", "unlock": "lock", "restore": "quarantine"}
+ TICKET_TIMES = ("first_attack_at", "condition_met_at", "detected_at", "received_at")
+ 
+ 
+@@ -17,27 +18,33 @@ class Conflict(Exception):
+ 
+ 
+ class NoActionToUpdate(Exception):
+-    """effect stage without an applied line for the same (bot, action, target)."""
++    """effect/released stage without a matching active action on this route."""
++
++
++class InvalidTransition(Exception):
++    """A record would mix asset scopes or start a new cycle on a restored ticket."""
++
++
++def _action_key(action, released=False):
++    name = RELEASES.get(action["action"], action["action"]) if released else action["action"]
++    return action["bot"], action["via"], name, action["target"]
+ 
+ 
+ def _active_actions(conn, ticket_id):
+-    """Applied lines whose target has not been released by the same bot since."""
++    """Active action per (bot, via, action, target), in recorded order."""
+     rows = conn.execute("SELECT * FROM actions WHERE ticket_id = ? AND duplicate = 0 ORDER BY id", (ticket_id,)).fetchall()
+     active = {}
+     for row in rows:
+         if row["result"] in APPLIED:
+-            active[(row["bot"], row["action"], row["target"])] = row
++            active[_action_key(row)] = row
+         elif row["result"] == "released":
+-            for key in [k for k in active if k[0] == row["bot"] and k[2] == row["target"]]:
+-                del active[key]
++            active.pop(_action_key(row, released=True), None)
+     return list(active.values())
+ 
+ 
+ def _action_ref(row, with_via=False):
+-    ref = {"bot": row["bot"], "action": row["action"], "target": row["target"]}
+-    if with_via:
+-        ref["via"] = row["via"]
+-    else:
++    ref = {"bot": row["bot"], "via": row["via"], "action": row["action"], "target": row["target"]}
++    if not with_via:
+         ref["result"] = row["result"]
+     return ref
+ 
+@@ -59,6 +66,23 @@ def check(conn, group_key, seat=None):
+         for r in rows]}
+ 
+ 
++def active_for_resource(conn, resource):
++    """All recorded live claims, across grouping keys. Close alone is not release.
++
++    This is a read snapshot, not a lock/reservation or permission to unblock.
++    """
++    tickets = []
++    rows = conn.execute("SELECT seat, ticket_id, status FROM tickets WHERE asset_id = ? "
++                        "AND data_origin = 'live' ORDER BY seat, ticket_id", (resource["asset_id"],)).fetchall()
++    for row in rows:
++        actions = [a for a in _active_actions(conn, row["ticket_id"])
++                   if all(a[name] == resource[name] for name in ("via", "action", "target"))]
++        if actions:
++            tickets.append({"seat": row["seat"], "ticket_id": row["ticket_id"], "status": row["status"],
++                            "active_actions": [_action_ref(a, with_via=True) for a in actions]})
++    return {"ok": True, "resource": resource, "tickets": tickets}
++
++
+ def _body_hash(body):
+     return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+ 
+@@ -126,6 +150,10 @@ def _apply(conn, body, key, now):
+         ticket = conn.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,)).fetchone()
+         created = True
+     else:
++        if ticket["asset_id"] != body["asset_id"]:
++            raise InvalidTransition("asset_id differs from the existing ticket; use a distinct group_key")
++        if ticket["status"] == "restored" and not set(body["event_ids"]).issubset(json.loads(ticket["event_ids"])):
++            raise InvalidTransition("restored ticket must be closed before recording a new application cycle")
+         merged = json.loads(ticket["event_ids"]) + [e for e in body["event_ids"] if e not in json.loads(ticket["event_ids"])]
+         conn.execute("UPDATE tickets SET event_ids = ? WHERE ticket_id = ?", (json.dumps(merged, ensure_ascii=False),
+                                                                              ticket["ticket_id"]))
+@@ -151,10 +179,9 @@ def _apply_action(conn, ticket, stage, action, key, now):
+     ticket_id, status = ticket["ticket_id"], ticket["status"]
+     if stage == "detected":
+         return False
++    active = _active_actions(conn, ticket_id)
+     if stage == "effect":
+-        line = conn.execute("SELECT id FROM actions WHERE ticket_id = ? AND bot = ? AND action = ? AND target = ? "
+-                            "AND result IN ('applied', 'already_applied') AND duplicate = 0 ORDER BY id DESC LIMIT 1",
+-                            (ticket_id, action["bot"], action["action"], action["target"])).fetchone()
++        line = next((a for a in active if _action_key(a) == _action_key(action)), None)
+         if line is None:
+             raise NoActionToUpdate()
+         conn.execute("UPDATE actions SET effect_verified = ?, effect_verified_at = ? WHERE id = ?",
+@@ -163,15 +190,18 @@ def _apply_action(conn, ticket, stage, action, key, now):
+             _set_status(conn, ticket_id, "verified", "verified_at", action["effect_verified_at"])
+         return False
+     if stage == "applied" and action["result"] in APPLIED:
+-        same = conn.execute("SELECT 1 FROM actions WHERE ticket_id = ? AND bot = ? AND action = ? AND target = ? "
+-                            "AND result IN ('applied', 'already_applied') AND duplicate = 0",
+-                            (ticket_id, action["bot"], action["action"], action["target"])).fetchone()
++        if status == "restored":
++            raise InvalidTransition("restored ticket must be closed before recording a new application cycle")
++        same = next((a for a in active if _action_key(a) == _action_key(action)), None)
+         if same:
+             db.insert_action(conn, ticket_id, action, key, now, duplicate=True)
+             return True
++    if action["result"] == "released" and not any(
++            _action_key(a) == _action_key(action, released=True) for a in active):
++        raise NoActionToUpdate()
+     db.insert_action(conn, ticket_id, action, key, now)
+     if action["result"] in APPLIED and status == "open":
+         _set_status(conn, ticket_id, "responding", "responded_at", action["finished_at"] or now)
+-    elif action["result"] == "released" and status in ("responding", "verified"):
++    elif action["result"] == "released" and status in ("responding", "verified") and not _active_actions(conn, ticket_id):
+         _set_status(conn, ticket_id, "restored", "restored_at", action["finished_at"] or now)
+     return False
+diff --git a/services/ticket-store/ticket_store/validate.py b/services/ticket-store/ticket_store/validate.py
+index 4e7b4791990b0efa0dff9fc93f9e5446420b24a6..848d3215287a57fa14f13c584483f9251b14e8a4 100644
+--- a/services/ticket-store/ticket_store/validate.py
++++ b/services/ticket-store/ticket_store/validate.py
+@@ -54,6 +54,21 @@ def idempotency_key(value):
+         raise Invalid("Idempotency-Key must be 8-100 printable characters")
+ 
+ 
++def resource_query(args):
++    """Exact scope required: an incomplete/ambiguous query must not mean zero claims."""
++    fields = {"asset_id", "via", "action", "target"}
++    if set(args) != fields or any(len(args.getlist(name)) != 1 for name in fields):
++        raise Invalid("active query requires exactly asset_id, via, action and target")
++    resource = {name: args[name] for name in sorted(fields)}
++    for name in ("asset_id", "target"):
++        _str(resource[name], name, 300, NO_CONTROL)
++    if resource["via"] not in VIA:
++        raise Invalid("via is invalid")
++    if not re.fullmatch(r"[a-z][a-z_]{1,31}", resource["action"]):
++        raise Invalid("action is invalid")
++    return resource
++
++
+ def record_body(body):
+     if not isinstance(body, dict):
+         raise Invalid("body must be a JSON object")
+diff --git a/tests/test_ticket_store_core.py b/tests/test_ticket_store_core.py
+index d85cbe34c14a4e8516d075e2bbbf52accc7c15db..788a99152659547f9a377679d44b19fe800ca671 100644
+--- a/tests/test_ticket_store_core.py
++++ b/tests/test_ticket_store_core.py
+@@ -1,5 +1,6 @@
+ """Ticket store check/record through the n8n app, checked against the contracts."""
+ from copy import deepcopy
++from concurrent.futures import ThreadPoolExecutor
+ import json
+ from pathlib import Path
+ 
+@@ -103,7 +104,7 @@ def test_s12_flow_applied_effect_released(apps):
+     assert first.get_json() == {"ok": True, "ticket_id": ticket_id, "created": True, "duplicate": False,
+                                 "status": "responding"}
+     assert check(n8n, "203.0.113.11", "D")["applied_actions"] == [
+-        {"bot": "112", "action": "block", "target": "203.0.113.11", "result": "applied"}]
++        {"bot": "112", "via": "portal", "action": "block", "target": "203.0.113.11", "result": "applied"}]
+ 
+     effect = record(n8n, s12("effect", effect_verified=True, effect_verified_at="2026-10-24T15:00:40+09:00"),
+                     "exec-1-effect")
+@@ -196,3 +197,152 @@ def test_s7_group_key_with_colon_and_slash_round_trips(apps):
+     record(n8n, body, "exec-7-applied")
+     found = check(n8n, "haedam-portal:assets/zz_s7_sample.txt", "C")
+     assert found["exists"] and found["applied_actions"][0]["action"] == "quarantine"
++
++
++def resource_check(client, **changes):
++    query = {"asset_id": "haedam-portal", "via": "portal",
++             "action": "block", "target": "203.0.113.11", **changes}
++    response = client.get("/api/v1/tickets/active", query_string=query, headers={"X-Response-Key": KEY})
++    if response.status_code == 200:
++        contract("ticket-response").validate(response.get_json())
++    return response
++
++
++def test_resource_check_finds_same_action_across_different_group_keys(apps):
++    n8n, _, path = apps
++    a_body = {**s12(), "seat": "A", "case_id": "S1", "group_key": "zz_review_user"}
++    a = record(n8n, a_body, "resource-a-applied").get_json()
++    # A resource release also needs claims recorded by a different bot/operator.
++    d = record(n8n, s12(bot="manual"), "resource-d-applied").get_json()
++    # Same IP on another execution route/asset must not be mistaken for this resource.
++    record(n8n, {**s12(via="pfsense"), "seat": "B"}, "resource-b-applied")
++    record(n8n, {**s12(), "seat": "C", "asset_id": "another-portal"}, "resource-c-applied")
++    assert [t["seat"] for t in check(n8n, "203.0.113.11")["tickets"]] == ["B", "C", "D"]
++    response = resource_check(n8n)
++    assert response.status_code == 200
++    assert [(t["seat"], t["ticket_id"]) for t in response.get_json()["tickets"]] == [
++        ("A", a["ticket_id"]), ("D", d["ticket_id"])]
++    # A human close is not evidence that the target was unblocked.
++    record(n8n, {**a_body, "stage": "effect", "action": s12(
++        effect_verified=True, effect_verified_at="2026-10-24T15:00:40+09:00")["action"]}, "resource-a-effect")
++    with db.connect(path) as conn:
++        db.close_ticket(conn, a["ticket_id"], "incident reviewed; action still active")
++    assert resource_check(n8n).get_json()["tickets"][0]["status"] == "closed"
++
++
++def test_via_separates_duplicate_effect_and_release_and_remaining_actions(apps):
++    n8n, _, path = apps
++    first = record(n8n, s12(), "via-portal-applied").get_json()
++    second = record(n8n, s12(via="pfsense"), "via-pf-applied").get_json()
++    assert second["duplicate"] is False
++    assert {a["via"] for a in check(n8n, "203.0.113.11", "D")["applied_actions"]} == {"portal", "pfsense"}
++    record(n8n, s12("effect", effect_verified=True, effect_verified_at="2026-10-24T15:00:40+09:00"),
++           "via-portal-effect")
++    assert [a["effect_verified"] for a in stored(path, first["ticket_id"])["actions"]] == [True, None]
++    released = record(n8n, s12("released", action="unblock", result="released"), "via-portal-release")
++    assert released.get_json()["status"] == "verified"
++    assert resource_check(n8n).get_json()["tickets"] == []
++    assert len(resource_check(n8n, via="pfsense").get_json()["tickets"]) == 1
++    # An effect arriving after release must not verify the old applied line.
++    late = record(n8n, s12("effect", effect_verified=True, effect_verified_at="2026-10-24T15:00:40+09:00"),
++                  "via-portal-late-effect")
++    assert late.status_code == 400
++    # A new application on the released route is active, not a historical duplicate.
++    fresh = record(n8n, {**s12(), "event_ids": ["new-portal-event"]}, "via-portal-new-apply")
++    assert fresh.get_json()["duplicate"] is False
++    assert len(check(n8n, "203.0.113.11", "D")["applied_actions"]) == 2
++
++
++def test_restored_ticket_rejects_new_application_until_closed_without_losing_event(apps):
++    n8n, dashboard, path = apps
++    first = record(n8n, s12(), "cycle-1-applied").get_json()
++    record(n8n, s12("released", action="unblock", result="released"), "cycle-1-released")
++    new = {**s12(), "event_ids": ["cycle-2-event"]}
++    detected = record(n8n, {**new, "stage": "detected", "action": None}, "cycle-2-detected")
++    assert detected.status_code == 409
++    conflict = record(n8n, new, "cycle-2-applied")
++    assert conflict.status_code == 409
++    assert conflict.get_json()["error"]["code"] == "INVALID_TRANSITION"
++    assert stored(path, first["ticket_id"])["event_ids"] == s12()["event_ids"]
++    assert len(stored(path, first["ticket_id"])["actions"]) == 2
++    with db.connect(path) as conn:
++        db.close_ticket(conn, first["ticket_id"], "restored; next cycle")
++    # Reuse the SAME key/body after resolving the conflict; no poisoned idempotency row.
++    fresh = record(n8n, new, "cycle-2-applied")
++    assert fresh.status_code == 201 and fresh.get_json()["duplicate"] is False
++    assert fresh.get_json()["ticket_id"] != first["ticket_id"]
++    assert resource_check(n8n).get_json()["tickets"][0]["ticket_id"] == fresh.get_json()["ticket_id"]
++    assert record(n8n, new, "cycle-2-applied").get_json() == fresh.get_json()
++
++
++def test_release_does_not_clear_a_different_action_on_the_same_route(apps):
++    n8n, _, _ = apps
++    record(n8n, s12(), "same-route-block")
++    record(n8n, s12(action="lock"), "same-route-lock")
++    response = record(n8n, s12("released", action="unblock", result="released"), "same-route-unblock")
++    assert response.get_json()["status"] == "responding"
++    assert [a["action"] for a in check(n8n, "203.0.113.11", "D")["applied_actions"]] == ["lock"]
++    wrong = record(n8n, s12("released", via="pfsense", action="unlock", result="released"), "wrong-route-unlock")
++    assert wrong.status_code == 400
++
++
++def test_existing_group_cannot_silently_change_asset_scope(apps):
++    n8n, _, path = apps
++    first = record(n8n, s12(), "asset-first-apply").get_json()
++    other = record(n8n, {**s12(), "asset_id": "another-portal"}, "asset-other-apply")
++    assert other.status_code == 409
++    assert len(stored(path, first["ticket_id"])["actions"]) == 1
++
++
++@pytest.mark.parametrize("query", [
++    {}, {"asset_id": "haedam-portal"},
++    {"asset_id": "haedam-portal", "via": "portal", "action": "block", "target": ""},
++    {"asset_id": "haedam-portal", "via": "unknown", "action": "block", "target": "x"},
++    {"asset_id": "haedam-portal", "via": "portal", "action": "block", "target": "x", "seat": "D"},
++    [("asset_id", "haedam-portal"), ("via", "portal"), ("action", "block"),
++     ("target", "x"), ("target", "y")],
++])
++def test_active_query_rejects_incomplete_or_ambiguous_scope(apps, query):
++    n8n, _, _ = apps
++    response = n8n.get("/api/v1/tickets/active", query_string=query, headers={"X-Response-Key": KEY})
++    assert response.status_code == 400
++    contract("ticket-response").validate(response.get_json())
++
++
++def test_active_zero_is_distinct_from_unauthorized_unavailable_and_samples(apps, monkeypatch):
++    from ticket_store import core, samples
++    n8n, dashboard, path = apps
++    assert n8n.get("/api/v1/tickets/active").status_code == 401
++    assert dashboard.get("/api/v1/tickets/active").status_code == 404
++    with db.connect(path) as conn:
++        samples.load_samples(conn)
++    response = resource_check(n8n)
++    assert response.status_code == 200 and response.get_json()["tickets"] == []
++
++    def unavailable(*args):
++        raise RuntimeError("synthetic storage failure")
++
++    monkeypatch.setattr(core, "active_for_resource", unavailable)
++    response = resource_check(n8n)
++    assert response.status_code == 500
++    assert response.get_json()["ok"] is False and "tickets" not in response.get_json()
++
++
++def test_concurrent_replays_keep_one_line_per_route_and_stable_responses(apps):
++    n8n, _, path = apps
++
++    def send(via):
++        with n8n.application.test_client() as client:
++            response = record(client, s12(via=via), f"concurrent-{via}-apply")
++            return via, response.status_code, response.get_json()
++
++    with ThreadPoolExecutor(max_workers=4) as pool:
++        responses = list(pool.map(send, ["portal", "pfsense"] * 4))
++    for via in ("portal", "pfsense"):
++        route = [(status, body) for v, status, body in responses if v == via]
++        assert all(response == route[0] for response in route)
++        assert route[0][1]["duplicate"] is False
++    ticket_id = responses[0][2]["ticket_id"]
++    assert {r[2]["ticket_id"] for r in responses} == {ticket_id}
++    assert len(stored(path, ticket_id)["actions"]) == 2
++    assert {a["via"] for a in check(n8n, "203.0.113.11", "D")["applied_actions"]} == {"portal", "pfsense"}
+diff --git a/tests/test_ticket_store_dashboard.py b/tests/test_ticket_store_dashboard.py
+index c4e66913979625d84a7e99f5c2a5c940a768c1e7..3f728ce65df08fbb090719842125d9da0a5bef0a 100644
+--- a/tests/test_ticket_store_dashboard.py
++++ b/tests/test_ticket_store_dashboard.py
+@@ -89,11 +89,13 @@ def test_status_badges_have_text_and_closed_is_hidden_by_default(db_path):
+     assert "T-20261024-9001" in seat_c and "T-20261024-9002" not in seat_c
+ 
+ 
+-def test_summary_counts_and_mttd_mttr(db_path):
++@pytest.mark.parametrize("day, closed_count", [(24, "1"), (25, "0")])
++def test_summary_counts_and_mttd_mttr(db_path, monkeypatch, day, closed_count):
++    monkeypatch.setattr("ticket_store.dashboard.now_kst", lambda: datetime(2026, 10, day, 16, tzinfo=KST))
+     html = page(client_for(db_path), "/?sample=1")
+     summary = html.split('<ul class="summary">')[1].split("</ul>")[0]
+     counts = re.findall(r'st-(\w+)">[^<]+</span> <strong>(\d+)</strong>', summary)
+-    assert counts == [("open", "1"), ("responding", "2"), ("verified", "1"), ("restored", "1"), ("closed", "0")]
++    assert counts == [("open", "1"), ("responding", "2"), ("verified", "1"), ("restored", "1"), ("closed", closed_count)]
+     assert "8초" in html and "42초" in html
+ 
+ 

@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "synthetic_only": true,
+  "scope": "baseline_shared_policy_and_local_control_api_candidate",
+  "actual_device_calls": 0,
+  "live_n8n_verified": false,
+  "c_source_commit": "e8db8ecd6aa497ad75df1d89cf01653b6cb5988a",
+  "c_patch_sha256": "85b2dcd356c114933c71e03acd07a631abd854543e973a0943cd84ff946caf9b",
+  "cases": [
+    {
+      "name": "normal",
+      "passed": true,
+      "detail": "two cycles, stable replay, explicit close/new ticket, synthetic final release",
+      "synthetic_target_receipts": 4
+    },
+    {
+      "name": "overlap",
+      "passed": true,
+      "detail": "different grouping owners: release held; claim relinquishment policy unresolved",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "after_target",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "after_record",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "record_unavailable",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "ack_loss",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "shared_last_owner",
+      "passed": true,
+      "detail": "candidate policy: logical withdrawal, one fake release, all C owner records verified; no target recall in repair",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "shared_new_owner",
+      "passed": true,
+      "detail": "candidate policy: logical withdrawal, one fake release, all C owner records verified; no target recall in repair",
+      "synthetic_target_receipts": 4
+    },
+    {
+      "name": "shared_retained_owner",
+      "passed": true,
+      "detail": "candidate policy: logical withdrawal, one fake release, all C owner records verified; no target recall in repair",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "shared_after_target",
+      "passed": true,
+      "detail": "candidate policy: logical withdrawal, one fake release, all C owner records verified; no target recall in repair",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "shared_after_first_record",
+      "passed": true,
+      "detail": "candidate policy: logical withdrawal, one fake release, all C owner records verified; no target recall in repair",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "shared_after_book_complete",
+      "passed": true,
+      "detail": "candidate policy: logical withdrawal, one fake release, all C owner records verified; no target recall in repair",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "api_auth_and_idempotency",
+      "passed": true,
+      "detail": "candidate auth/scope/idempotency/recovery checked against C test clients; no real target",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "api_cancel_before_target",
+      "passed": true,
+      "detail": "candidate auth/scope/idempotency/recovery checked against C test clients; no real target",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "api_repair_after_target",
+      "passed": true,
+      "detail": "candidate auth/scope/idempotency/recovery checked against C test clients; no real target",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "api_repair_after_first_record",
+      "passed": true,
+      "detail": "candidate auth/scope/idempotency/recovery checked against C test clients; no real target",
+      "synthetic_target_receipts": 3
+    },
+    {
+      "name": "api_repair_after_book_complete",
+      "passed": true,
+      "detail": "candidate auth/scope/idempotency/recovery checked against C test clients; no real target",
+      "synthetic_target_receipts": 3
+    }
+  ],
+  "implementation_sha256": {
+    "tools/simulated_execution.py": "ead86a2da5e73467e9a19290a8bf61ea8e2188d9b6d325c213635da597f5eea2",
+    "tools/resource_gate.py": "e37164d6bca46e4e0f56fd672d1983c1d777027cdbc1a211ad4f28c3c76bbe41",
+    "tools/rehearse_integration.py": "543abaf173f3f4b2fb4825220f091f16ec7cb7562c4b044183e6fd673a177164",
+    "infra/n8n/workflows/haedam-16-ticket-decision-offline.json": "ea9fddf0403f6149350e4b3dfc29dd29de3b5866b3d110543cbefac7ecf782f7",
+    "tools/shared_claims.py": "95d3df249429ffbd941ef9a3a2baf45df4bf67336a6520e0b1b6be6fca2ecd1d",
+    "tools/shared_release_simulation.py": "46b7c4fe132fb0a1518144322c752c1fa99a9916f4ba18489a4695dd1cd275e9",
+    "tools/rehearse_shared_release.py": "9f8ce5ff1bda2c13992db7fba902301739de92ba96b4c2f8a26fcee0c78c923d",
+    "tools/shared_control_api.py": "70159142e870766743da5217f45e8a4080cdd294c181badfb8407d5260c830f9",
+    "tools/control_audit.py": "09128e2a2ddb08b77938416775eb05213fa876294bd0b163367dd5d34ff050d5",
+    "tools/rehearse_control_api.py": "c7be465fe7656fb2c35f96911976aab05caaa3b019be0334908df4823fb85735",
+    "contracts/candidate-shared-control.schema.json": "f23aa36c2f361440ee4123e488bac8d17767e2e4b25859c8997de6fce0721a58"
+  },
+  "remaining": [
+    "C/D policy adoption, real identity/TLS/deployment, v1-to-v2 migration and stopped-executor verification",
+    "actual n8n deployment and all-caller coordination",
+    "actual target idempotency, effects, normal access and recovery",
+    "school VPN/firewall and operating procedures"
+  ]
+}

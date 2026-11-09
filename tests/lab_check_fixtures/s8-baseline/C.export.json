@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "receipt_id": "synthetic-C-final",
+  "run_id": "fixture-s8-baseline",
+  "card_sha256": "1c2631c92e039a11d781ad9bf020c40bcbcbdd9c070478509914f8b8cd1e5ba7",
+  "environment": "fixture",
+  "origin": "synthetic",
+  "seat": "C",
+  "phase": "final",
+  "attempt_id": "01",
+  "collector_version": "file-export-v1",
+  "vantage_id": "ticket-host",
+  "version": "synthetic-v1",
+  "observed_at": "2026-10-23T17:00:01+09:00",
+  "query_start": "2026-10-23T10:00:00+09:00",
+  "query_end": "2026-10-23T17:00:00+09:00",
+  "clock_uncertainty_seconds": 0,
+  "checks": [
+    {
+      "check_id": "C.store",
+      "availability": "unavailable",
+      "definition_state": "not_applicable",
+      "query_status": "ok",
+      "coverage": "complete",
+      "count": null,
+      "reason_code": "NONE"
+    },
+    {
+      "check_id": "C.tickets",
+      "availability": "unavailable",
+      "definition_state": "not_applicable",
+      "query_status": "not_run",
+      "coverage": "unknown",
+      "count": null,
+      "reason_code": "STORE_NOT_RUNNING"
+    }
+  ]
+}

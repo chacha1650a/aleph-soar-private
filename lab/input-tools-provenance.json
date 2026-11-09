@@ -1,0 +1,35 @@
+{
+  "scope": "Preserved lab input tools; not a deployment or live acceptance result",
+  "files": [
+    {
+      "path": "lab/s1s4/s4_session_check.py",
+      "sha256": "9726a74e6e6183a08cdf5c5030a435849bf926f64e8cf8d8ac6f532c9fc3752a",
+      "source": "B 11/03 preparation s4_session_check.py; 15:35:39 Kali launch hash matches",
+      "live_scope": "S4-20261103-LIVE01 client observations only; ticket closure requires A/C/D evidence"
+    },
+    {
+      "path": "lab/preserved/20261103/s8s10_input.py",
+      "sha256": "f6f6e477ae854100c0c3da10738c494de7886438128d14347dbf6231fb5cb961",
+      "source": "ALEPH-Monday-20261102 r5/tools/s8s10_input.py",
+      "live_scope": "S8 input tool; S10 detection/ticket trial not executed on 11/03 at preparation time",
+      "original_path": "tools/s8s10_input.py"
+    },
+    {
+      "path": "tools/s8s10_input.py",
+      "sha256": "1f0d2798712ed5c05d79b731ecb6e997de2a8baff2391c0750140a5899ddb89c",
+      "source": "11/04 follow-up: sanitized phase/type failure evidence; offline-tested, not live-verified"
+    },
+    {
+      "path": "lab/preserved/20261104/s4_session_round.py",
+      "sha256": "e9a233715680288f733ba8eb5e86f2d7ccd519dbdaeeb850ad9d4442a759f5af",
+      "source": "PR #134 5aaaa14; B S4-20261104-REPEAT02 executed copy, unchanged",
+      "original_path": "lab/s1s4/s4_session_round.py",
+      "live_scope": "Automatic lock followed by operator-gate interruption; partial validation and separate recovery, not full pass"
+    },
+    {
+      "path": "lab/s1s4/s4_session_round.py",
+      "sha256": "3a370f3f452c446e220417466671347adff8d22ef8aecf34032631dd6644c1fe",
+      "source": "11/04 post-REPEAT02 operator-gate correction: case-insensitive explicit confirmation, local re-prompt, sanitized stop reason; offline only"
+    }
+  ]
+}

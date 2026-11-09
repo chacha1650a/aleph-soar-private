@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "receipt_id": "synthetic-A-final",
+  "run_id": "fixture-s8-baseline",
+  "card_sha256": "1c2631c92e039a11d781ad9bf020c40bcbcbdd9c070478509914f8b8cd1e5ba7",
+  "environment": "fixture",
+  "origin": "synthetic",
+  "seat": "A",
+  "phase": "final",
+  "attempt_id": "01",
+  "collector_version": "file-export-v1",
+  "vantage_id": "portal-vm",
+  "version": "synthetic-v1",
+  "observed_at": "2026-10-23T17:00:01+09:00",
+  "query_start": "2026-10-23T10:00:00+09:00",
+  "query_end": "2026-10-23T17:00:00+09:00",
+  "clock_uncertainty_seconds": 0,
+  "checks": [
+    {
+      "check_id": "A.events",
+      "availability": "available",
+      "definition_state": "not_applicable",
+      "query_status": "ok",
+      "coverage": "complete",
+      "count": null,
+      "reason_code": "NONE",
+      "events": [
+        {
+          "key": "synthetic-event-1",
+          "at": "2026-10-23T10:00:00.100+09:00",
+          "src_ip": "203.0.113.21",
+          "fields": {
+            "rule": "web-scan",
+            "http_status": 404
+          }
+        },
+        {
+          "key": "synthetic-event-2",
+          "at": "2026-10-23T10:00:00.101+09:00",
+          "src_ip": "203.0.113.21",
+          "fields": {
+            "rule": "login-bruteforce",
+            "http_status": 401
+          }
+        },
+        {
+          "key": "synthetic-event-3",
+          "at": "2026-10-23T10:00:00.102+09:00",
+          "src_ip": "203.0.113.21",
+          "fields": {
+            "rule": "web-scan",
+            "http_status": 404
+          }
+        },
+        {
+          "key": "synthetic-event-4",
+          "at": "2026-10-23T10:00:00.103+09:00",
+          "src_ip": "203.0.113.21",
+          "fields": {
+            "rule": "login-bruteforce",
+            "http_status": 401
+          }
+        },
+        {
+          "key": "synthetic-event-5",
+          "at": "2026-10-23T10:00:00.104+09:00",
+          "src_ip": "203.0.113.21",
+          "fields": {
+            "rule": "web-scan",
+            "http_status": 404
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NoBugs 팀 작업공간</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}">
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">NOBUGS · ALEPH</p>
+      <h1>함께 작업할 뼈대가 준비됐습니다.</h1>
+      <p>이 화면은 개발 환경의 실행을 확인하는 시작 화면입니다.</p>
+      <section>
+        <h2>현재 구현된 것</h2>
+        <p>Flask 앱 실행, 이 시작 화면, 상태 확인 API</p>
+        <a href="{{ url_for('workspace.health') }}">상태 확인 API 열기</a>
+      </section>
+      <section>
+        <h2>팀이 구현할 것</h2>
+        <p>로그인·권한·조회 이벤트, 사건 타임라인, 탐지·대응·원복</p>
+        <p>샘플 계약 데이터는 contracts/examples에 있으며 실제 탐지 결과가 아닙니다.</p>
+      </section>
+      <p class="footnote">작업 시작: README → docs/08-team-workspace.md</p>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+2026/10/29 16:37:27 INFO: n8n-s7 172.21.0.1 "PUT /active-response" with parameters {"agents_list": "010"} and body {"command": "!s7-restore-ar", "arguments": ["/home/haedam/haedam-portal-frontend/dist/index.html", "ar-1029-02"]} done in 0.029s: 200

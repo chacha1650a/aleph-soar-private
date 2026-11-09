@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "max_workers": 2,
+  "timeout_seconds": 15,
+  "jobs": [
+    {
+      "seat": "B",
+      "profile": "B.profile.json"
+    },
+    {
+      "seat": "D",
+      "profile": "D.profile.json"
+    }
+  ]
+}

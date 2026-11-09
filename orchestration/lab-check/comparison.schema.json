@@ -1,0 +1,304 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "engine_version": {
+      "const": "1.0-offline"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "card_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "input_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "receipt_sha256": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "environment": {
+      "enum": [
+        "fixture",
+        "lab"
+      ]
+    },
+    "mode": {
+      "const": "offline_exports"
+    },
+    "phase": {
+      "enum": [
+        "prepare",
+        "final"
+      ]
+    },
+    "scope": {
+      "enum": [
+        "normalization_only",
+        "baseline_observation",
+        "postchange_observation"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "matched",
+        "incomplete",
+        "mismatch"
+      ]
+    },
+    "exit_code": {
+      "enum": [
+        0,
+        3,
+        4
+      ]
+    },
+    "ready_candidate": {
+      "const": false
+    },
+    "final_complete": {
+      "const": false
+    },
+    "readiness_reason": {
+      "enum": [
+        "REPLAY_ONLY",
+        "OFFLINE_EXPORT_UNVERIFIED"
+      ]
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "properties": {
+          "check_id": {
+            "enum": [
+              "A.effect",
+              "A.events",
+              "A.restored",
+              "B.input",
+              "B.raw",
+              "C.store",
+              "C.tickets",
+              "D.definition",
+              "D.n8n",
+              "D.normalized",
+              "D.received",
+              "input.count"
+            ]
+          },
+          "seat": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "verdict": {
+            "enum": [
+              "pass",
+              "fail",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "reason_code": {
+            "enum": [
+              "ACTUAL_CALL_AND_REPORTED_EFFECT",
+              "ACTUAL_CALL_MISSING",
+              "BASELINE_EXECUTION_COUNT",
+              "CLOCK_BOUNDARY_AMBIGUOUS",
+              "CLOCK_UNKNOWN",
+              "COLLECTOR_FAILED",
+              "COLLECTOR_TIMEOUT",
+              "COUNT_COMPARISON",
+              "COUNT_UNCONFIRMED",
+              "DEFINITION_STATE",
+              "DEFINITION_UNDEFINED",
+              "DRY_RUN_OR_HTTP_NOT_EXECUTED",
+              "DUPLICATE_EVENT",
+              "DUPLICATE_EXECUTION",
+              "EVENTS_MATCHED",
+              "EVENT_EXPORT_MISSING",
+              "EVENT_ID_MISMATCH",
+              "EXECUTION_DETAIL_MISSING",
+              "EXPECTED_ENVIRONMENT_STATE",
+              "EXPORTED_PREPARATION_METADATA_ONLY",
+              "FUTURE_OBSERVATION",
+              "INPUT_COUNT_MISMATCH",
+              "MISSING_CHECK",
+              "MISSING_INPUT",
+              "MISSING_RECEIPT",
+              "NONE",
+              "NORMALIZATION_MISMATCH",
+              "NOT_CONFIGURED",
+              "OBSERVATION_PENDING",
+              "OFFLINE_EXPORT_UNVERIFIED",
+              "PARTIAL_COVERAGE",
+              "PERMISSION_DENIED",
+              "QUERY_FAILED",
+              "QUERY_INCOMPLETE",
+              "QUERY_WINDOW_INCOMPLETE",
+              "QUERY_WINDOW_UNKNOWN",
+              "REFERENCE_UNCONFIRMED",
+              "REPLAY_ONLY",
+              "SERVICE_UNAVAILABLE",
+              "SOURCE_EVENT_COUNT",
+              "SOURCE_FIELDS_MISSING",
+              "SOURCE_PARSE_INCOMPLETE",
+              "SOURCE_UNAVAILABLE",
+              "STALE_PREPARATION",
+              "STORE_AVAILABILITY",
+              "STORE_NOT_RUNNING",
+              "STORE_NOT_RUNNING_FUNCTION_UNVERIFIED",
+              "TARGET_EFFECT_UNCONFIRMED",
+              "TARGET_STATE",
+              "UNKNOWN",
+              "VANTAGE_UNVERIFIED",
+              "VERSION_CHANGED"
+            ]
+          },
+          "count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "excluded_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "check_id",
+          "seat",
+          "verdict",
+          "reason_code",
+          "count",
+          "excluded_count"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "collection_summary": {
+      "type": "object",
+      "properties": {
+        "peak_workers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "jobs": {
+          "type": "array",
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "properties": {
+              "seat": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "collected",
+                  "partial",
+                  "timeout",
+                  "failed",
+                  "not_configured"
+                ]
+              },
+              "worker_exit_code": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "duration_seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "profile_sha256": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "seat",
+              "status",
+              "worker_exit_code",
+              "duration_seconds",
+              "profile_sha256"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "peak_workers",
+        "jobs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "engine_version",
+    "run_id",
+    "card_sha256",
+    "policy_sha256",
+    "input_sha256",
+    "receipt_sha256",
+    "environment",
+    "mode",
+    "phase",
+    "scope",
+    "generated_at",
+    "status",
+    "exit_code",
+    "ready_candidate",
+    "final_complete",
+    "readiness_reason",
+    "rows"
+  ],
+  "additionalProperties": false
+}

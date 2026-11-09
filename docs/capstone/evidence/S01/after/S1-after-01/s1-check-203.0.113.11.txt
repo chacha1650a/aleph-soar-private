@@ -1,0 +1,60 @@
+window 2026-10-28 12:43:00 ~ 15:37:00 KST, attack 203.0.113.11, normal 203.0.113.12, events 67
+
+[input] 203.0.113.11 login_failed: 18 (condition: 401, same username, >8 in 30m)
+   1 12:43:28.896 user=zz_a1 status=401 id=b7d5be8b
+   2 12:45:08.745 user=zz_a1 status=401 id=fb084267
+   3 12:46:48.777 user=zz_a1 status=401 id=e6c814bc
+   4 12:48:28.822 user=zz_a1 status=401 id=935f7123
+   5 12:50:08.738 user=zz_a1 status=401 id=bbef1a6a
+   6 12:51:48.678 user=zz_a1 status=401 id=13f09297
+   7 12:53:28.708 user=zz_a1 status=401 id=634490db
+   8 12:55:08.677 user=zz_a1 status=401 id=94c59efd
+   9 12:56:48.685 user=zz_a1 status=401 id=8501fc75  <= condition met (9 x 401 in 30m)
+  10 15:16:40.923 user=zz_a1 status=401 id=66e4a163
+  11 15:18:23.455 user=zz_a1 status=401 id=0da71f45
+  12 15:20:01.242 user=zz_a1 status=401 id=163340fe
+  13 15:21:43.138 user=zz_a1 status=401 id=763d7c63
+  14 15:23:21.258 user=zz_a1 status=401 id=f3ea5ea3
+  15 15:25:01.549 user=zz_a1 status=401 id=af29e203
+  16 15:26:40.872 user=zz_a1 status=401 id=9cee6bb2
+  17 15:28:22.877 user=zz_a1 status=401 id=80ac046d
+  18 15:30:01.860 user=zz_a1 status=401 id=8947efa3
+
+[response]
+  12:57:49.316 web.ip_blocked target=203.0.113.11 by=10.250.0.100
+  14:32:04.378 web.ip_unblocked target=203.0.113.11 by=10.250.0.100
+  15:30:49.688 web.ip_blocked target=203.0.113.11 by=10.250.0.100
+  15:34:55.097 web.ip_unblocked target=203.0.113.11 by=10.250.0.100
+
+[effect] 203.0.113.11 after block / 203.0.113.12
+  12:43:28.719 203.0.113.11 GET /api/v1/auth/me 200
+  12:45:08.553 203.0.113.11 GET /api/v1/auth/me 200
+  12:46:48.534 203.0.113.11 GET /api/v1/auth/me 200
+  12:48:28.571 203.0.113.11 GET /api/v1/auth/me 200
+  12:50:08.529 203.0.113.11 GET /api/v1/auth/me 200
+  12:51:48.527 203.0.113.11 GET /api/v1/auth/me 200
+  12:53:28.523 203.0.113.11 GET /api/v1/auth/me 200
+  12:55:08.519 203.0.113.11 GET /api/v1/auth/me 200
+  12:56:48.527 203.0.113.11 GET /api/v1/auth/me 200
+  12:58:28.573 203.0.113.11 GET /api/v1/auth/me 403
+  14:03:59.544 203.0.113.12 GET /api/v1/auth/me 200
+  14:04:00.136 203.0.113.12 login_succeeded user=zz_n1
+  14:04:00.137 203.0.113.12 POST /api/v1/auth/login 200
+  14:04:00.206 203.0.113.12 GET /api/v1/auth/me 200
+  14:04:00.300 203.0.113.12 POST /api/v1/auth/logout 200
+  14:32:57.713 203.0.113.11 GET /api/v1/auth/me 200
+  15:16:40.771 203.0.113.11 GET /api/v1/auth/me 200
+  15:18:22.498 203.0.113.11 GET /api/v1/auth/me 200
+  15:20:00.928 203.0.113.11 GET /api/v1/auth/me 200
+  15:21:41.163 203.0.113.11 GET /api/v1/auth/me 200
+  15:23:20.742 203.0.113.11 GET /api/v1/auth/me 200
+  15:25:01.291 203.0.113.11 GET /api/v1/auth/me 200
+  15:26:40.722 203.0.113.11 GET /api/v1/auth/me 200
+  15:28:21.375 203.0.113.11 GET /api/v1/auth/me 200
+  15:30:01.114 203.0.113.11 GET /api/v1/auth/me 200
+  15:31:40.721 203.0.113.11 GET /api/v1/auth/me 403
+  15:35:55.951 203.0.113.11 GET /api/v1/auth/me 200
+
+[db now 15:39:05]
+  blocked_ips: []
+  users: [('zz_a1', 0), ('zz_n1', 0)]

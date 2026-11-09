@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.1", "event_id": "sample-web-accessed-01",
+  "timestamp": "2026-10-21T01:02:00Z", "source": "portal",
+  "event_type": "web.file_accessed", "src_ip": "192.0.2.50",
+  "asset_id": "lab-portal", "outcome": "success",
+  "details": {"file_path": "static/uploads/zz_s7_marker.txt", "http_method": "GET", "http_status": 200}
+}

@@ -1,0 +1,26 @@
+{
+  "source_repository": "NoBugs-Aleph/aleph-soar-capstone",
+  "captured_date": "2026-10-19",
+  "base_head_commit": "d236221",
+  "source_rules_commit": null,
+  "source_rules_status": "v3_working_tree_snapshot_captured_before_portal_contract_commit",
+  "rule_id": "haedam-rules-2026-10-19-v3",
+  "canonical_rules_path": "docs/haedam/PROJECT-RULES.md",
+  "canonical_rules_sha256": "8eb43f6f58c58f61d4ee8af7b203c0a937227516682b602bc5649e6c0e9d0061",
+  "template_path": "scaffolds/haedam-portal-frontend",
+  "template_file_sha256": {
+    ".gitignore": "68186dfdf5febc62d2b141ec1751c7f5da704583509bce3b60ba170fbc3704d4",
+    "AGENTS.md": "e2212599bab35986a3a99f1db1131d809f3ca5f99589b7459bcd05e34483750a",
+    "CLAUDE.md": "f2373004b7686556d45b894bc5bb973bedf05ab21be0a9fd904b93992abddd7c",
+    "CODEX.md": "4d3cfcccfd4da8ad92c22df5adf5fb56d96e84683c663ca6c1cdc92011e2c8af",
+    "contracts/README.md": "abf5fb8ccea183323eb533cb04d0dcfdddd86a73d27f305ba67a13e81821c5d9",
+    "docs/PROJECT-RULES.md": "8eb43f6f58c58f61d4ee8af7b203c0a937227516682b602bc5649e6c0e9d0061",
+    "README.md": "2002a23fe4b8949eb7ec6b5fb5bc7a4a5881b032c38823b75b49323d9a043f53",
+    "src/api/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/components/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/pages/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/styles/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "hash_normalization": "UTF-8 LF"
+}

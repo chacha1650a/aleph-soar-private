@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.1", "event_id": "sample-fim-created-01",
+  "timestamp": "2026-10-21T01:00:00Z", "source": "wazuh-fim",
+  "event_type": "fim.file_created", "asset_id": "lab-portal", "outcome": "success",
+  "details": {
+    "file_path": "static/uploads/zz_s7_marker.txt",
+    "sha256_after": "0000000000000000000000000000000000000000000000000000000000000001",
+    "mode_after": "644", "audit_user": "www-data"
+  }
+}

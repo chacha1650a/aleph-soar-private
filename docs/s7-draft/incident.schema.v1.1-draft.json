@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nobugs:aleph:incident:1.1-draft",
+  "title": "S7 draft shared incident view v1.1 (proposal, not adopted)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "incident_id", "title", "status", "asset_id", "event_ids", "reason", "response_state"],
+  "anyOf": [{"required": ["username"]}, {"required": ["file_path"]}],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "1.1"]},
+    "incident_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "status": {"enum": ["open", "contained", "resolved"]},
+    "username": {"type": "string", "minLength": 1},
+    "file_path": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$",
+      "minLength": 1
+    },
+    "asset_id": {"type": "string", "minLength": 1},
+    "event_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "reason": {"type": "string", "minLength": 1},
+    "response_state": {"enum": ["not_requested", "pending", "succeeded", "failed", "restored"]}
+  }
+}

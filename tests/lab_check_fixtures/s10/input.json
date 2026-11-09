@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "run_id": "fixture-s10",
+  "card_sha256": "4a10465e84f416de3b46e1c7fc87f4f7e8a607d2a788e3af0cf34f205a34ba81",
+  "environment": "fixture",
+  "origin": "synthetic",
+  "started_at": "2026-10-23T10:00:00+09:00",
+  "ended_at": "2026-10-23T10:00:02+09:00",
+  "source_ip": "203.0.113.10",
+  "target_ip": "203.0.113.1",
+  "count": 1,
+  "execution_id": "synthetic-input-01"
+}

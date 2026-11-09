@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.1", "incident_id": "sample-incident-s7-01",
+  "title": "Synthetic S7 file change then web access", "status": "open",
+  "file_path": "static/uploads/zz_s7_marker.txt", "asset_id": "lab-portal",
+  "event_ids": ["sample-fim-created-01", "sample-web-accessed-01"],
+  "reason": "Contract example only; no detector has evaluated these events.",
+  "response_state": "not_requested"
+}

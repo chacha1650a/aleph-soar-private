@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "receipt_id": "synthetic-B-final",
+  "run_id": "fixture-s10",
+  "card_sha256": "4a10465e84f416de3b46e1c7fc87f4f7e8a607d2a788e3af0cf34f205a34ba81",
+  "environment": "fixture",
+  "origin": "synthetic",
+  "seat": "B",
+  "phase": "final",
+  "attempt_id": "01",
+  "collector_version": "file-export-v1",
+  "vantage_id": "boundary-host",
+  "version": "synthetic-v1",
+  "observed_at": "2026-10-23T17:00:01+09:00",
+  "query_start": "2026-10-23T10:00:00+09:00",
+  "query_end": "2026-10-23T17:00:00+09:00",
+  "clock_uncertainty_seconds": 0,
+  "checks": [
+    {
+      "check_id": "B.raw",
+      "availability": "available",
+      "definition_state": "not_applicable",
+      "query_status": "ok",
+      "coverage": "complete",
+      "count": null,
+      "reason_code": "NONE"
+    }
+  ]
+}

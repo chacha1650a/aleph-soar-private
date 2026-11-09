@@ -1,0 +1,36 @@
+{
+  "adapter": "jsonl-events-v1",
+  "source_root": ".",
+  "source": "D.bad.jsonl",
+  "metadata": "D.metadata.json",
+  "max_lines": 1000,
+  "identity": {
+    "kind": "filterlog-ipv4-icmp-v1",
+    "message": "message",
+    "source_year": 2026,
+    "source_utc_offset": "+09:00"
+  },
+  "projections": [
+    {
+      "check_id": "D.received",
+      "mode": "identity"
+    },
+    {
+      "check_id": "D.normalized",
+      "mode": "mapped",
+      "at": "source_timestamp",
+      "src_ip": "src_ip",
+      "fields": {
+        "rule": "rule",
+        "interface": "pf_interface",
+        "direction": "pf_direction",
+        "action": "pf_action",
+        "tracker": "pf_tracker",
+        "icmp_id": "pf_icmp_id",
+        "icmp_seq": "pf_icmp_seq",
+        "dst_ip": "pf_dst_ip",
+        "proto": "pf_proto"
+      }
+    }
+  ]
+}

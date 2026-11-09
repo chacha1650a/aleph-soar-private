@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "synthetic_only": true,
+  "scope": "block_unblock_simulated_target",
+  "actual_device_calls": 0,
+  "live_n8n_verified": false,
+  "c_source_commit": "e8db8ecd6aa497ad75df1d89cf01653b6cb5988a",
+  "c_patch_sha256": "85b2dcd356c114933c71e03acd07a631abd854543e973a0943cd84ff946caf9b",
+  "cases": [
+    {
+      "name": "normal",
+      "passed": true,
+      "detail": "two cycles, stable replay, explicit close/new ticket, synthetic final release",
+      "synthetic_target_receipts": 4
+    },
+    {
+      "name": "overlap",
+      "passed": true,
+      "detail": "different grouping owners: release held; claim relinquishment policy unresolved",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "after_target",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "after_record",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "record_unavailable",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    },
+    {
+      "name": "ack_loss",
+      "passed": true,
+      "detail": "pending survives restart; record-only repair; target receipts unchanged during repair",
+      "synthetic_target_receipts": 2
+    }
+  ],
+  "implementation_sha256": {
+    "tools/simulated_execution.py": "ead86a2da5e73467e9a19290a8bf61ea8e2188d9b6d325c213635da597f5eea2",
+    "tools/resource_gate.py": "e37164d6bca46e4e0f56fd672d1983c1d777027cdbc1a211ad4f28c3c76bbe41",
+    "tools/rehearse_integration.py": "543abaf173f3f4b2fb4825220f091f16ec7cb7562c4b044183e6fd673a177164",
+    "infra/n8n/workflows/haedam-16-ticket-decision-offline.json": "ea9fddf0403f6149350e4b3dfc29dd29de3b5866b3d110543cbefac7ecf782f7"
+  },
+  "remaining": [
+    "C/D policy adoption and shared-claim relinquishment",
+    "actual n8n deployment and all-caller coordination",
+    "actual target idempotency, effects, normal access and recovery",
+    "school VPN/firewall and operating procedures"
+  ]
+}

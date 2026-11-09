@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nobugs:aleph:event:1.1-draft",
+  "title": "S7 draft shared event v1.1 (proposal, not adopted)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "timestamp", "source", "event_type", "asset_id", "outcome"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "1.1"]},
+    "event_id": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "source": {"type": "string", "minLength": 1},
+    "event_type": {"enum": [
+      "auth.login_failed", "auth.login_succeeded", "iam.role_changed", "data.read",
+      "fim.file_created", "fim.file_modified", "fim.file_deleted", "web.file_accessed"
+    ]},
+    "username": {"type": "string", "minLength": 1},
+    "src_ip": {"type": "string", "anyOf": [{"format": "ipv4"}, {"format": "ipv6"}]},
+    "asset_id": {"type": "string", "minLength": 1},
+    "outcome": {"enum": ["success", "failure", "denied"]},
+    "details": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resource": {"type": "string"},
+        "previous_role": {"type": "string"},
+        "new_role": {"type": "string"},
+        "file_path": {
+          "type": "string",
+          "description": "Path relative to the web root of asset_id; no leading slash, no '..' segment, no backslash.",
+          "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$",
+          "minLength": 1
+        },
+        "sha256_before": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "sha256_after": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "mode_before": {"type": "string", "pattern": "^[0-7]{3,4}$"},
+        "mode_after": {"type": "string", "pattern": "^[0-7]{3,4}$"},
+        "audit_user": {"type": "string", "minLength": 1},
+        "process_name": {"type": "string", "minLength": 1},
+        "http_method": {"enum": ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]},
+        "http_status": {"type": "integer", "minimum": 100, "maximum": 599}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"event_type": {"enum": ["auth.login_failed", "auth.login_succeeded", "iam.role_changed", "data.read"]}}},
+      "then": {"required": ["username", "src_ip"]}
+    },
+    {
+      "if": {"properties": {"event_type": {"enum": ["fim.file_created", "fim.file_modified", "fim.file_deleted"]}}},
+      "then": {"required": ["details"], "properties": {"details": {"required": ["file_path"]}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "web.file_accessed"}}},
+      "then": {
+        "required": ["src_ip", "details"],
+        "properties": {"details": {"required": ["file_path", "http_method", "http_status"]}}
+      }
+    }
+  ]
+}

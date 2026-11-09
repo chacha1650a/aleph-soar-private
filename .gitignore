@@ -1,0 +1,44 @@
+# Local reference copies
+/references/local/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.ovpn
+*.postman_environment.json
+
+# Runtime data and evidence containing local information
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+*.log
+*.db
+*.sqlite*
+/data/
+/logs/
+/evidence/local/
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Python packaging and test output
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Per-person AI settings and temporary handoffs
+.claude/settings.local.json
+/.local/

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "run_id": "fixture-s8-baseline",
+  "scenario_id": "S8",
+  "profile_id": "s8-baseline-v1",
+  "profile": "baseline",
+  "environment": "fixture",
+  "required_checks": [
+    "A.events",
+    "B.input",
+    "C.store",
+    "C.tickets",
+    "D.received",
+    "D.normalized",
+    "D.definition",
+    "D.n8n"
+  ],
+  "expected_versions": {
+    "A": "synthetic-v1",
+    "B": "synthetic-v1",
+    "C": "synthetic-v1",
+    "D": "synthetic-v1"
+  },
+  "source_ip": "203.0.113.21",
+  "target_ip": "203.0.113.1",
+  "input_start": "2026-10-23T10:00:00+09:00",
+  "input_end": "2026-10-23T10:00:02+09:00",
+  "observation_end": "2026-10-23T10:15:02+09:00",
+  "prepare_valid_for_seconds": 60,
+  "expected_input_count": 3,
+  "expected_event_count": 5,
+  "input_owner": "B",
+  "reviewer": "A",
+  "policy_sha256": "cfdb5439772cab22670a5c983386c8a307af84b6027f4b08a411c828a080122f"
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "scope": "integration_candidate_sources",
+  "captured_at": "2026-10-30T11:46:58.567305+09:00",
+  "runtime_verified": false,
+  "repositories": {
+    "capstone": {
+      "source_revision": "bc8bfffcba7b53937fe076d6f598479ae632fcf0",
+      "branch": "origin/main (PR #103 merged) + codex/security-flow-1029 (PR #94)",
+      "includes_origin_main": true,
+      "note": "source_revision is the origin/main base after PR #103 merged; ticket_source_sha256 reflects PR #94 rebased onto it (db.py, dashboard.py re-pinned; db.py again for the S12 case board link). backend/frontend revisions were not re-captured."
+    }
+  },
+  "n8n_exports": [
+    {
+      "path": "infra/n8n/workflows/haedam-00-recv-check.json",
+      "sha256": "25801f6422fdfce0a24fbc1434e56de6126766b6f85e4f838cb8f5df15998bb4"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-01-ticket-check.json",
+      "sha256": "80250998622280a993d84f571006c8946e68aadf4944258465b97acf7c0e37a9"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-02-portal-test.json",
+      "sha256": "b2d97c256db2153aecc24584599d2215660665de97abc7cdaf5d20de8fc1a52f"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-10-result-log.json",
+      "sha256": "286c58e46a56a5e232025371040ee43228c4a413f277e44501af70b0ac1a56eb"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-11-discord-notify.json",
+      "sha256": "50174b0efaab89012b415d691b8d4d7b234a45ba55e06b1ffe29f447701b46a5"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-12-portal-ip-block.json",
+      "sha256": "75de51f103c723f8b5d90e73dcd486c9489c709f7ff49901ba88383d72d9f634"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-13-portal-account-lock.json",
+      "sha256": "25b120a55108acd536ae6137c084eb25d8f6119b70f3fa25ce825a6f89959c19"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-14-pfsense-block.json",
+      "sha256": "62e961172506ca1f516adeff7a5dcd56b9ed92697dd17f457b632a2e5a8e5b1b"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-15-wazuh-restore.json",
+      "sha256": "e4ada8c6d0866a24a0a02aa34e3895b733b81cb33b057db4a60ac33e68bbc9e1"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-16-ticket-decision-offline.json",
+      "sha256": "ea9fddf0403f6149350e4b3dfc29dd29de3b5866b3d110543cbefac7ecf782f7"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-17-wazuh-token.json",
+      "sha256": "25cb4fc74c4d980eb03f4cb9d6df5e7bd7b3f3391b7e6800b317266ef62cfeb4"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-20-s12-main.json",
+      "sha256": "6910151a37e272876446118cfc4f75398372f041bd0e8d71b549a30d230490f3"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-30-s1-main.json",
+      "sha256": "d19569289d853bc609ecb7e44df8991ee4101e4ce287f3d64e089ddc68ff6fd2"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-31-s4-main.json",
+      "sha256": "89c1e0442eaabc601a07bd039dc72dff390548fa67ddb1b69f047c6199c6e04e"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-32-s8-s10-main.json",
+      "sha256": "8b76e7cef5dd699023bba9ca00ced986dd96abdd603b69ce4c5e9952af37585c"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-33-s7-main.json",
+      "sha256": "08c5274cce2597b74736015db6aac1f16f985245c4aa7024c2687cd50c43ecdb"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-34-s7-live-acceptance.json",
+      "sha256": "df321efb94439da30dd70fe6f758056a1c90b63bac7e42dece7aacacc8e178ad"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-40-effect-report.json",
+      "sha256": "2b9cbb0397ff17fcc9c81579405049a5ba35dcd75567582f0b1d72c2c4d49886"
+    },
+    {
+      "path": "infra/n8n/workflows/haedam-50-release.json",
+      "sha256": "e6e09961b0e8a61d2980e3a01c6aafec4a3cf87a0552343516372ce50cfdfd56"
+    }
+  ],
+  "school_observations": {
+    "final_deployment_heads": null,
+    "portal_running_version": null,
+    "ticket_image_id": null,
+    "ticket_database_identity": null,
+    "n8n_running_version": null,
+    "published_workflow_version": null,
+    "webhook_auth_verified": null,
+    "source_path_verified": null,
+    "effect_verified": null,
+    "release_verified": null
+  },
+  "s1_workflow_dependencies": [
+    "infra/n8n/workflows/haedam-10-result-log.json",
+    "infra/n8n/workflows/haedam-11-discord-notify.json",
+    "infra/n8n/workflows/haedam-12-portal-ip-block.json",
+    "infra/n8n/workflows/haedam-30-s1-main.json"
+  ],
+  "ticket_source_sha256": {
+    "api_n8n.py": "fc74e59d1183b9eeba539534cb01fd3b7fe4eea5ad748df4f2b42e78a7c87415",
+    "core.py": "21ebc5adef9a3372b923c9ef897ea7d9cd348d63882eed6bf96eb0543d0d0d28",
+    "db.py": "ffe2018abb3cd746ebf3cee70ab2dceea50fe2b8140053fdab7e3b58f9410af1",
+    "app.py": "8738f0fd07402411a302b47ee55af038cd330e6a0739003d5825a0316114dfde",
+    "dashboard.py": "7dc8ac826ab40264a6ab7a22123b4f4cc1b47011c49de64c39288a24ad2d3e31",
+    "validate.py": "51c6866da8f29b2b278ec821467917970336b1323062e29b2d55f8c165fc7857"
+  },
+  "local_validation": {
+    "code_source": "origin/main bc8bfff + PR #94 rebased",
+    "full_pytest": {
+      "passed": 569,
+      "skipped": 2,
+      "failed": 0
+    },
+    "actual_device_calls": 0
+  },
+  "previous_packet": "docs/capstone/evidence/s1-candidate-20261028/versions.json"
+}

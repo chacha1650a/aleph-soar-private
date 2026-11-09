@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "adapter": {
+          "const": "file-export-v1"
+        },
+        "source_root": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "export": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [
+        "adapter",
+        "source_root",
+        "export"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "adapter": {
+          "const": "filterlog-ipv4-icmp-v1"
+        },
+        "source_root": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "metadata": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "max_lines": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "check_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-D][.][a-z0-9_]+$"
+          },
+          "maxItems": 30,
+          "minItems": 1
+        },
+        "source_year": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100
+        },
+        "source_utc_offset": {
+          "type": "string",
+          "pattern": "^[+-](0[0-9]|1[0-4]):[0-5][0-9]$"
+        }
+      },
+      "required": [
+        "adapter",
+        "source_root",
+        "source",
+        "metadata",
+        "max_lines",
+        "check_ids",
+        "source_year",
+        "source_utc_offset"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "adapter": {
+          "const": "jsonl-events-v1"
+        },
+        "source_root": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "metadata": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "max_lines": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "identity": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "field-v1"
+                },
+                "path": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "kind",
+                "path"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "filterlog-ipv4-icmp-v1"
+                },
+                "message": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                  "maxLength": 200
+                },
+                "source_year": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                },
+                "source_utc_offset": {
+                  "type": "string",
+                  "pattern": "^[+-](0[0-9]|1[0-4]):[0-5][0-9]$"
+                }
+              },
+              "required": [
+                "kind",
+                "message",
+                "source_year",
+                "source_utc_offset"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "projections": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "check_id": {
+                    "type": "string",
+                    "pattern": "^[A-D][.][a-z0-9_]+$"
+                  },
+                  "mode": {
+                    "const": "identity"
+                  }
+                },
+                "required": [
+                  "check_id",
+                  "mode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "check_id": {
+                    "type": "string",
+                    "pattern": "^[A-D][.][a-z0-9_]+$"
+                  },
+                  "mode": {
+                    "const": "mapped"
+                  },
+                  "at": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                    "maxLength": 200
+                  },
+                  "src_ip": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                    "maxLength": 200
+                  },
+                  "fields": {
+                    "type": "object",
+                    "properties": {
+                      "rule": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "http_status": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "interface": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "direction": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "action": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "tracker": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "icmp_id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "icmp_seq": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "dst_ip": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      },
+                      "proto": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+                        "maxLength": 200
+                      }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "check_id",
+                  "mode",
+                  "at",
+                  "src_ip",
+                  "fields"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "maxItems": 30,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "adapter",
+        "source_root",
+        "source",
+        "metadata",
+        "max_lines",
+        "identity",
+        "projections"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

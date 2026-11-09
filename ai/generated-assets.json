@@ -1,0 +1,21 @@
+[
+  ".claude/agents/aleph-backend.md",
+  ".claude/agents/aleph-coordinator.md",
+  ".claude/agents/aleph-dashboard.md",
+  ".claude/agents/aleph-detection.md",
+  ".claude/agents/aleph-reviewer.md",
+  ".claude/agents/aleph-scribe.md",
+  ".claude/skills/aleph-contract-change/SKILL.md",
+  ".claude/skills/aleph-handoff/SKILL.md",
+  ".claude/skills/aleph-scenario-check/SKILL.md",
+  ".claude/skills/aleph-task-plan/SKILL.md",
+  ".claude/skills/aleph-team-notion/SKILL.md",
+  ".claude/skills/aleph-team-notion/references/minutes-template.md",
+  ".claude/skills/aleph-team-notion/references/notion-editing.md",
+  ".codex/agents/aleph-backend.toml",
+  ".codex/agents/aleph-coordinator.toml",
+  ".codex/agents/aleph-dashboard.toml",
+  ".codex/agents/aleph-detection.toml",
+  ".codex/agents/aleph-reviewer.toml",
+  ".codex/agents/aleph-scribe.toml"
+]

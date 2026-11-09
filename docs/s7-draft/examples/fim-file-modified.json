@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.1", "event_id": "sample-fim-modified-01",
+  "timestamp": "2026-10-21T01:05:00Z", "source": "wazuh-fim",
+  "event_type": "fim.file_modified", "asset_id": "lab-portal", "outcome": "success",
+  "details": {
+    "file_path": "templates/index.html",
+    "sha256_before": "0000000000000000000000000000000000000000000000000000000000000002",
+    "sha256_after": "0000000000000000000000000000000000000000000000000000000000000003",
+    "audit_user": "www-data", "process_name": "python"
+  }
+}
