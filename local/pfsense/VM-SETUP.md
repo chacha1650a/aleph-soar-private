@@ -4,7 +4,7 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 
 ## 망 구성
 
-> **이 PC의 사정(11/09)**: VMnet2가 이미 `172.16.50.0/24`(호스트 .1·.10)로 쓰이고 VMnet3은 없어서, 기존 망은 그대로 두고 VMnet10(`203.0.113.0/24`)·VMnet11(`10.250.0.0/24`)을 새로 만들기로 했습니다. 만들기: 관리자 권한으로 VMware → Edit → Virtual Network Editor → Change Settings → Add Network로 두 개를 Host-only로 추가하고 DHCP·Host virtual adapter 연결 설정을 끕니다. 호스트 어댑터 `VMware Network Adapter VMnet11`의 IPv4는 Windows 네트워크 설정에서 `10.250.0.100/24`로 고정합니다. 아직 만들지 않았습니다.
+> **이 PC의 사정(11/09)**: VMnet2가 이미 `172.16.50.0/24`(호스트 .1·.10)로 쓰이고 VMnet3은 없어서, 기존 망은 그대로 두고 VMnet10(`203.0.113.0/24`)·VMnet11(`10.250.0.0/24`)을 새로 만들기로 했습니다. 만들기: 관리자 권한으로 VMware → Edit → Virtual Network Editor → Change Settings → Add Network로 두 개를 Host-only로 추가하고 DHCP는 끄고 "Connect a host virtual adapter"는 켠 채로 둡니다(호스트 주소 `.100`이 필요합니다). 호스트 어댑터 `VMware Network Adapter VMnet11`의 IPv4는 Windows 네트워크 설정에서 `10.250.0.100/24`로 고정합니다. 아직 만들지 않았습니다.
 
 | 이름 | 용도 | 주소 | 팀 환경과의 대응 |
 | --- | --- | --- | --- |
