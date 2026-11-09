@@ -4,17 +4,19 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 
 ## 망 구성
 
+> **이 PC의 사정(11/09)**: VMnet2가 이미 `172.16.50.0/24`(호스트 .1·.10)로 쓰이고 VMnet3은 없어서, 기존 망은 그대로 두고 VMnet10(`203.0.113.0/24`)·VMnet11(`10.250.0.0/24`)을 새로 만들기로 했습니다. 만들기: 관리자 권한으로 VMware → Edit → Virtual Network Editor → Change Settings → Add Network로 두 개를 Host-only로 추가하고 DHCP·Host virtual adapter 연결 설정을 끕니다. 호스트 어댑터 `VMware Network Adapter VMnet11`의 IPv4는 Windows 네트워크 설정에서 `10.250.0.100/24`로 고정합니다. 아직 만들지 않았습니다.
+
 | 이름 | 용도 | 주소 | 팀 환경과의 대응 |
 | --- | --- | --- | --- |
-| VMnet2 (호스트 전용) | WAN 쪽. Kali·정상 클라이언트 | `203.0.113.0/24`, pfSense `.1`, Kali `.10`, 공격 출발지 `.22` | B의 WAN `em0` |
-| VMnet3 (호스트 전용) | LAN 쪽. 팀 VPN 터널을 대신함 | `10.250.0.0/24`, pfSense `.1`, A VM `.2`, Wazuh agent 대상, **호스트(Windows) `.100`** | 팀 VPN 터널 `10.250.0.0/24` |
+| VMnet10 (호스트 전용, 새로 추가) | WAN 쪽. Kali·정상 클라이언트 | `203.0.113.0/24`, pfSense `.1`, Kali `.10`, 공격 출발지 `.22` | B의 WAN `em0` |
+| VMnet11 (호스트 전용, 새로 추가) | LAN 쪽. 팀 VPN 터널을 대신함 | `10.250.0.0/24`, pfSense `.1`, A VM `.2`, Wazuh agent 대상, **호스트(Windows) `.100`** | 팀 VPN 터널 `10.250.0.0/24` |
 
-- VMnet 어댑터의 호스트 주소를 `10.250.0.100`으로 두면 `infra/n8n`·`BIND_IP`와 pfSense forced command의 `from="10.250.0.100"`이 팀 환경과 같은 값이 됩니다.
-- VMware 가상 네트워크 편집기에서 두 VMnet의 DHCP를 끕니다. pfSense가 주소를 줍니다.
+- VMnet11 어댑터의 호스트 주소를 `10.250.0.100`으로 두면 `infra/n8n`·`BIND_IP`와 pfSense forced command의 `from="10.250.0.100"`이 팀 환경과 같은 값이 됩니다.
+- VMware 가상 네트워크 편집기에서 VMnet10·VMnet11의 DHCP를 끕니다. pfSense가 주소를 줍니다.
 
 ## VM 사양
 
-- pfSense CE **2.7.2-RELEASE**(B의 도구는 이 버전·WAN `em0`/`203.0.113.1`이 아니면 거부합니다). FreeBSD 64-bit, RAM 1GB, 디스크 8GB, NIC 2개(em0=VMnet2, em1=VMnet3)
+- pfSense CE **2.7.2-RELEASE**(B의 도구는 이 버전·WAN `em0`/`203.0.113.1`이 아니면 거부합니다). FreeBSD 64-bit, RAM 1GB, 디스크 8GB, NIC 2개(em0=VMnet10, em1=VMnet11)
 - 호스트 RAM이 16GB라 Graylog(약 4GB)·Wazuh(약 4~6GB)·n8n과 합산해 여유를 먼저 확인하세요.
 
 ## 설정 순서
