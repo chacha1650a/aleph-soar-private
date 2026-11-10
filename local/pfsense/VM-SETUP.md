@@ -32,3 +32,12 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 
 - A의 포털 VM(`10.250.0.2:5000`)을 이 PC에서 어떻게 띄울지는 정하지 않았습니다. 앱은 `src/`·`haedam-portal-*` 저장소에 있고, VM 또는 Docker 중 선택해야 합니다.
 - pfSense VM의 실제 규칙 수와 Suricata 패키지 설정은 B의 장비 설정에 있고 이 저장소에는 없습니다. B에게 설정 내보내기(`config.xml`, 비밀 제거)를 받아야 같은 규칙을 재현할 수 있습니다.
+
+## 11/10 실제 확인한 것
+
+- pfSense VM(`haedam-pfsense-2.7.2`, em0=VMnet10 WAN `203.0.113.1/24` static, em1=VMnet11 LAN `10.250.0.1/24`)을 만들어 설치했습니다. 호스트에서 LAN ping과 웹 화면(80)이 열립니다.
+- WAN 업스트림 게이트웨이가 `255.255.255.0`으로 잘못 들어가 있어 `None`으로 바꾸고 `WANGW` 항목을 지웠습니다. WAN의 "Block bogon networks"가 켜져 있으면 `203.0.113.0/24`(문서용 대역)가 막히므로 해제해야 합니다.
+- 원격 로그(`10.250.0.100:514` UDP, Firewall Events)가 Graylog에 도착합니다. 호스트에서 보낸 시험 패킷과 pfSense `filterlog` 메시지가 저장소에서 확인됩니다(수신 시각 `gl2_receive_timestamp` 기준 59건).
+- **주의:** pfSense가 보내는 시각에는 시간대가 없어 Graylog(`Asia/Seoul`)가 9시간 앞서 `timestamp`로 저장합니다(수신 09:29 UTC → 메시지 시각 00:29 UTC). 검색은 수신 시각으로 하거나 시간 범위를 넓혀야 합니다. 탐지 규칙의 시간 조건에 미치는 영향은 확인하지 않았습니다.
+- 아직 안 한 것: Suricata EVE 전송(5515), forced command SSH 키와 B의 `haedam-pf-response` 설치, 차단·해제 시험.
+
