@@ -9,7 +9,7 @@
 | capstone main 전체 복사 + 로컬 실행 구성(`local/`) | 푸시됨 |
 | Wazuh 4.9.0 Docker 기동, `syslog_output` → 중계기 → Graylog 5514 | **실제 기동·수신 확인** (중계기 `sent=330` = Graylog 저장 330건, `wazuh_*` 필드 파싱) |
 | n8n에 haedam-17 반입(비활성) | 학원 PC n8n에서만 함. 집 PC n8n에는 없음 |
-| pfSense VM | **11/10 설치·확인함**(VMnet10/11, WAN `203.0.113.1`, LAN `10.250.0.1`, 방화벽 로그 → Graylog 수신). VM 파일은 저장소 밖 `C:\gov	eam-project\_vm\pfsense`라 집으로 따라가지 않음. 절차·결과는 `local/pfsense/VM-SETUP.md` |
+| pfSense VM | **11/10 설치·확인함**(VMnet10/11, WAN `203.0.113.1`, LAN `10.250.0.1`, 방화벽 로그 → Graylog 수신). VM 파일은 저장소 밖 `C:\gov\team-project\_vm\pfsense`라 집으로 따라가지 않음. 절차·결과는 `local/pfsense/VM-SETUP.md` |
 | pfSense 차단 도구(B) | 11/10 설치·전용 SSH 키·`status` 응답 확인. 차단·해제는 실제 적용만 확인(도구 자체 판정은 불확실). n8n haedam-14의 SSH 접속은 인증 로그로 확인, `status` 본문은 미확인 |
 | Discord 웹훅 | 학원 PC n8n 자격 증명 `Discord Webhook account`에 직접 입력함. 주소가 채팅에 노출되어 재생성 권장 |
 | 시험하지 않음 | `local/up.ps1` 전체 경로, A agent 연결, FIM, 차단 후 `.22` 접속 실패·해제 후 복구, Suricata EVE 전송, n8n에서 block·unblock 호출 |
