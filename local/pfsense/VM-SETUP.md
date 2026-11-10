@@ -57,3 +57,10 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 - 못한 것: 차단 후 `.22`에서의 접속 실패·해제 후 복구 확인(이 PC에 `.22` 주소가 없음), 도구가 일찍 읽는 원인 확정, n8n haedam-14 연결. 도구의 `applied_verified`는 두 번 모두 `false`였으므로, 이 도구 자체의 성공 판정으로는 시험이 통과하지 못했습니다.
 - 시험 뒤 정리(운영자 작업): Easy Rule 규칙·alias 삭제, 저널 `state.json`을 `/root`로 이동. 이 VM에서만 쓴 방법이며 팀 환경에서는 도구 문서대로 대조합니다.
 
+## 11/10 n8n(haedam-14) → pfSense SSH 연결
+
+- n8n SSH 자격 증명 `haedam-pf-response D`(Private Key, host `10.250.0.1:22`, user `admin`, passphrase 없음)를 만들어 haedam-14에 연결했습니다. 개인키는 저장소에 없습니다.
+- 첫 실행은 n8n이 키를 해석하지 못해 실패했습니다(n8n 로그 `USERAUTH_FAILURE`, pfSense 로그 `[preauth]` 끊김, 접속 출발지는 `10.250.0.100`으로 보여 `from=` 제한은 문제가 아니었음). 키를 다시 붙여 넣은 뒤 pfSense 로그에 `Accepted publickey for admin from 10.250.0.100 ... ED25519 SHA256:v2k32W0Li9...`가 기록됐습니다.
+- 위 성공은 pfSense 인증 로그로 확인했고, 도구의 `status` 응답 본문(`stdout`)은 n8n 화면에서 직접 보지 못했습니다. 같은 시각에 `[preauth]` 실패 줄이 하나 있어(재시도 또는 이전 실행 추정) 정확한 원인은 확인하지 못했습니다.
+- 이 시험은 `status`(읽기)만 했고 `block`·`unblock`은 n8n에서 호출하지 않았습니다. 시험용으로 고정한 입력 데이터는 해제해야 합니다.
+
