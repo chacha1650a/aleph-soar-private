@@ -41,3 +41,11 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 - **주의:** pfSense가 보내는 시각에는 시간대가 없어 Graylog(`Asia/Seoul`)가 9시간 앞서 `timestamp`로 저장합니다(수신 09:29 UTC → 메시지 시각 00:29 UTC). 검색은 수신 시각으로 하거나 시간 범위를 넓혀야 합니다. 탐지 규칙의 시간 조건에 미치는 영향은 확인하지 않았습니다.
 - 아직 안 한 것: Suricata EVE 전송(5515), forced command SSH 키와 B의 `haedam-pf-response` 설치, 차단·해제 시험.
 
+## 11/10 차단 도구 설치와 첫 시험 (확인한 것과 못한 것)
+
+- B의 번들을 `tools/build_pfsense_bundle.py`로 만들고 `--verify` 통과(도구 SHA `f0eea297...3553ed`). pfSense에 `scp`로 복사해 `--install`하고, `/usr/local/sbin/haedam-pf-response`의 해시·권한(root, 0750)을 확인했습니다.
+- n8n 전용 ed25519 키를 만들고(개인키는 `%USERPROFILE%\.ssh\haedam_pf_n8n`, 저장소 밖) `admin`의 Authorized SSH Keys에 `from="10.250.0.100",restrict,command="/usr/local/sbin/haedam-pf-response"` 제한으로 등록했습니다. 명령은 `haedam-pf-response ...`로 시작해야 합니다(아니면 `invalid_ssh_command`).
+- 확인됨: 키 로그인, `.22` `status` 성공(`rule_present:false`), `id` 같은 임의 명령은 거부, 다른 대상(`.50`)은 `target_not_approved`.
+- **불확실한 결과**: `block` 요청이 `outcome_needs_reconciliation`으로 끝나(설정 반영·실행 규칙 미반영), 같은 ID 재전송은 `replay_needs_reconciliation`, 새 ID `unblock`도 불확실로 끝났습니다. 이후 pfSense에는 빈 `EasyRuleBlockHostsWAN` 대상의 `block drop in` 규칙만 남은 것으로 보이며(콘솔 확인), 저널에는 pending이 남아 `status`가 `pending_needs_reconciliation`을 반환합니다. 원인은 확인하지 못했습니다(규칙 반영 지연 추정).
+- **하지 못한 것**: 차단 후 `.22` 접속 실패·해제 후 복구 확인(이 PC에 `.22` 주소·시험 출발지 없음), pending 정리, n8n haedam-14 연결.
+
