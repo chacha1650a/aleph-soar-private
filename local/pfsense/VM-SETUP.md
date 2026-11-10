@@ -49,3 +49,11 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 - **불확실한 결과**: `block` 요청이 `outcome_needs_reconciliation`으로 끝나(설정 반영·실행 규칙 미반영), 같은 ID 재전송은 `replay_needs_reconciliation`, 새 ID `unblock`도 불확실로 끝났습니다. 이후 pfSense에는 빈 `EasyRuleBlockHostsWAN` 대상의 `block drop in` 규칙만 남은 것으로 보이며(콘솔 확인), 저널에는 pending이 남아 `status`가 `pending_needs_reconciliation`을 반환합니다. 원인은 확인하지 못했습니다(규칙 반영 지연 추정).
 - **하지 못한 것**: 차단 후 `.22` 접속 실패·해제 후 복구 확인(이 PC에 `.22` 주소·시험 출발지 없음), pending 정리, n8n haedam-14 연결.
 
+## 11/10 차단·해제 두 번째 시험 (같은 결과 재현, 실제 적용은 확인)
+
+- 저널(`/cf/conf/haedam-pf-response/state.json`)과 Easy Rule 규칙·alias를 정리한 뒤 새 소유자·새 요청 ID로 다시 시험했습니다.
+- `block`: 도구는 `outcome_needs_reconciliation`(`rule_present:false`)으로 답했지만, 직후 pfSense 콘솔에서 `pfctl -sr | grep EasyRule`에 `block drop in quick on em0 ... from <EasyRuleBlockHostsWAN>` 규칙이 있고 `pfctl -t EasyRuleBlockHostsWAN -T show`에 `203.0.113.22`가 있음을 확인했습니다. **실제 차단은 적용됐고, 도구가 EasyRule 직후 너무 일찍 읽어 불확실로 판정한 것으로 보입니다(추정).** 첫 시험과 같은 결과여서 이 VM(RAM 1GB, 단독 구성)에서 재현됩니다.
+- `unblock`(새 요청 ID, 같은 소유자): 도구는 다시 불확실로 답했지만 테이블에서 `.22`가 빠진 것을 콘솔에서 확인했습니다. 빈 규칙은 남아 있고, 도구 상태는 `configured:false, rule_present:true, table_present:false`, `status`는 `pending_needs_reconciliation`입니다.
+- 못한 것: 차단 후 `.22`에서의 접속 실패·해제 후 복구 확인(이 PC에 `.22` 주소가 없음), 도구가 일찍 읽는 원인 확정, n8n haedam-14 연결. 도구의 `applied_verified`는 두 번 모두 `false`였으므로, 이 도구 자체의 성공 판정으로는 시험이 통과하지 못했습니다.
+- 시험 뒤 정리(운영자 작업): Easy Rule 규칙·alias 삭제, 저널 `state.json`을 `/root`로 이동. 이 VM에서만 쓴 방법이며 팀 환경에서는 도구 문서대로 대조합니다.
+
