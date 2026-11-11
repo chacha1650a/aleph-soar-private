@@ -1,0 +1,15 @@
+instance-id: haedam-attacker-1111
+local-hostname: haedam-attacker
+network:
+  version: 2
+  ethernets:
+    wan0:
+      match: {macaddress: "00:50:56:2a:01:0a"}
+      set-name: wan0
+      addresses: [203.0.113.10/24, 203.0.113.22/24]
+      routes: [{to: 10.250.0.0/24, via: 203.0.113.1}]
+    prov0:
+      match: {macaddress: "00:50:56:2a:01:99"}
+      set-name: prov0
+      dhcp4: true
+      optional: true

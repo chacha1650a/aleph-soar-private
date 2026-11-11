@@ -1,0 +1,16 @@
+#cloud-config
+hostname: haedam-attacker
+users:
+  - name: lab
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-ed25519 <공개키: %USERPROFILE%.sshhaedam_attacker_vm.pub> haedam-attacker-vm
+ssh_pwauth: false
+disable_root: true
+package_update: true
+packages: [nmap, curl, hydra, hping3]
+runcmd:
+  - touch /var/lib/haedam-firstboot-done

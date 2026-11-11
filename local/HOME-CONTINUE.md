@@ -35,7 +35,7 @@
 
 1. (집에서 pfSense를 쓰려면) VMnet10·11 추가 → pfSense VM 설치 → 차단 도구 설치 (`local/pfsense/VM-SETUP.md`). 이 PC에 전용 SSH 키는 `%USERPROFILE%\.ssh\haedam_pf_n8n`이라 집에서는 새로 만든다
 2. n8n 워크플로 반입과 자격 증명 연결 (집 n8n은 비어 있음)
-3. A 포털: 11/11 Linux VM(10.250.0.2)으로 결정·구성함 → `local/portal-vm/README.md`. 남은 것: pfSense 경유 접속(Kali VM), S7 AR 스크립트, 대응 API·n8n 연결
+3. A 포털: 11/11 Linux VM(10.250.0.2)으로 결정·구성함 → `local/portal-vm/README.md`. 공격자 VM(`local/attacker-vm/`)으로 pfSense 경유 접속·출발지 보존·.22 차단 효과 확인함. 남은 것: S7 AR 스크립트, 대응 API·n8n 연결
 4. `local/up.ps1` 전체 경로 시험, Wazuh 기본 계정 변경
 5. 원래 capstone 저장소의 PR #142(문서 병합)는 팀 쪽에서 열려 있음
 
