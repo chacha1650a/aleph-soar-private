@@ -14,7 +14,7 @@
 | 실행 | systemd `haedam-portal`: `waitress-serve --host=10.250.0.2 --port=5000`. 환경값은 `instance/portal.env`(0600) |
 | DB | SQLite `instance/haedam.sqlite3` (**팀 계획은 MySQL** — 이 실습 VM만 다름). `seed-demo`로 합성 계정 생성, 임시 비밀번호는 VM의 `instance/demo-accounts.txt`(0600)에만 있음 |
 | 이벤트 | GELF UDP → `10.250.0.100:12201`(Graylog `haedam GELF UDP`), `ASSET_ID=haedam-portal` |
-| 대응 API | `RESPONSE_API_KEY`·`RESPONSE_ALLOWED_CIDRS` 비움 = **꺼짐**. n8n 112·111 연결 시 키를 VM과 n8n 자격 증명에만 넣고 관리망 CIDR을 정해야 함 |
+| 대응 API | 11/11 켬: `RESPONSE_API_KEY` = 실습 전용 키(호스트 `%USERPROFILE%\.haedam-lab\portal-response-lab.key`와 VM `portal.env`에만 있음), `RESPONSE_ALLOWED_CIDRS=10.250.0.100/32`(n8n이 있는 이 PC) |
 | Wazuh agent | 4.9.0-1(hold), ID **010**, 이름 `haedam-portal`, manager `10.250.0.100:1514`, 자동 등록 끔(키는 API `/agents/insert`로 만든 것만 사용). FIM: `dist` 실시간(`realtime="yes" check_all="yes"`) |
 
 스크립트: `provision.sh`(포털 설치·서비스), `agent.sh`(agent 설치·FIM). 키와 비밀값은 스크립트에 없습니다.
@@ -33,9 +33,9 @@
 
 ## 확인하지 못한 것
 
-- **pfSense를 거치는 접속**: 이 PC는 VMnet11에 직접 붙어 있어서 호스트에서 포털로 가는 요청은 pfSense를 거치지 않습니다. WAN 쪽 출발지(예: Kali VM, 203.0.113.10, 게이트웨이 203.0.113.1)에서 `10.250.0.2:5000`으로 가는 경로와 pfSense WAN 허용 규칙(팀 NR-xx)은 아직 만들지도 시험하지도 않았습니다.
-- n8n haedam-15/17에서 S7 AR 호출(이 PC n8n의 Wazuh 자격 증명·주소는 팀 환경 값이라 아직 맞추지 않음).
-- 포털 대응 API(112 IP 차단·111 계정 잠금)와 n8n 연결.
+- ~~pfSense를 거치는 접속~~ → 공격자 VM으로 확인함(`local/attacker-vm/README.md`).
+- 111 계정 잠금 경로, haedam-17(토큰 발급 분리판)을 거치는 haedam-15 신판 — 이 PC의 haedam-15는 아직 스스로 로그인하는 구판입니다.
+- 이번 S7 n8n 시험의 Graylog 554·553·550 경보(API 직접 시험 때는 확인했고 같은 경로라 같을 것으로 보지만 이번 실행은 보지 않음).
 - VM 재부팅 뒤 자동 시작(포털·agent).
 
 ## 주의
@@ -55,3 +55,30 @@
   - Graylog(agent 010): 554 added → 553 deleted(격리) → 550 modified(변조 `6e2467c4…`) → 550 modified(복구 `2aca4626…` = 기준본). 각 단계 1초 안팎.
 - 참고: 이 포털은 `dist` 최상위의 임의 `.html`(`zz_s7_lab01.html`)을 처음부터 404로 냈습니다(명시한 정적 파일·라우트만 제공). 공격이 실제로 보이는지는 팀 S7처럼 `assets/` 아래 파일로 시험해야 합니다.
 - 팀 차이: 팀은 `n8n-s7` 전용 API 계정(권한 `agent:id:010`의 AR만)을 쓰지만, 이 PC는 기본 관리 계정으로 호출했습니다. n8n 연결 전에 같은 제한 계정을 만들어야 합니다.
+
+## 11/11 대응 API·n8n 연결 시험 (LAB 자격 증명)
+
+사용자 결정: 팀 자격 증명 값과 워크플로 코드는 그대로 두고, **실습용 자격 증명을 따로 만들어 시험하는 동안만 노드 연결을 바꾼 뒤 되돌린다.**
+
+- n8n 자격 증명(이 PC n8n에만, 값은 저장소에 없음):
+  - `haedam-portal-response LAB` — Header Auth `X-Response-Key` = 실습 키
+  - `wazuh-api LAB (n8n-s7)` — Basic Auth, Wazuh 제한 계정 `n8n-s7`
+- Wazuh 제한 계정(팀과 같은 모양): 사용자 `n8n-s7` → 역할 `n8n-s7-ar` → 정책 `n8n-s7-ar-010`(`active-response:command`, `agent:id:010`만). 확인: 이 계정으로 agent 001 AR은 403, 010은 허용.
+- 워크플로가 C의 Wazuh API를 `https://10.250.0.3:55000`으로 고정해 부르므로 VMnet11에 `10.250.0.3` 별칭을 붙이고 `local/wazuh/docker-compose.c-alias.yml`로 manager API를 그 주소에도 열었습니다(워크플로는 바꾸지 않음).
+- 시험은 n8n CLI로 임시 워크플로를 실행해 Execute Workflow로 팀 워크플로를 불렀습니다: `docker exec -e N8N_RUNNERS_BROKER_PORT=5690 n8n n8n execute --id=<임시 ID> --rawOutput`(서버가 떠 있으면 5679 충돌이라 포트 지정 필요).
+
+결과:
+
+| 경로 | 결과 |
+| --- | --- |
+| haedam-12 차단(`203.0.113.22`) | 포털 API 성공, `.22`에서 포털 요청 403, `.10`은 200 |
+| haedam-12 해제 | `released`, `applied_verified: true`, `.22` 다시 200 |
+| haedam-15 격리 `assets/zz_s7_lab02.txt` (run `S7-20261111-LAB01`) | n8n `ok: true, result: applied` → VM 로그 `quarantine ok`(5ms), 공격자에서 404 |
+| haedam-15 복구 `index.html` 변조 (run `S7-20261111-LAB02`) | `restore ok`, `sha256_after = sha256_expected = 2aca4626…`, 공격자 응답에서 변조 줄 사라짐 |
+| 뒷정리 | 격리 항목 `purge`, `verify` ok(files=4) |
+
+처음 haedam-15 실행은 `wazuh_auth_failed`였습니다. 이 PC의 haedam-15는 haedam-17로 분리되기 전 구판이라 자체 `Wazuh 로그인` 노드가 팀 자격 증명을 쓰고 있었기 때문이며, 그 노드도 LAB으로 바꾼 뒤 성공했습니다.
+
+되돌림: haedam-12·15·17을 시험 전 백업(`%USERPROFILE%\.haedam-lab\n8n-backup\*-before-lab-1111.json`)으로 다시 반입하고 12·15를 다시 게시함. 확인: haedam-12 → `haedam-portal-response`, haedam-15 → `wazuh-api (n8n-s7)`, 둘 다 활성, haedam-17 비활성.
+
+남은 것: 임시 워크플로 5개(`tmpLab1111H12Blk`·`H12Unb`·`H15Q`·`H15R`·`WzLogin`, 모두 수동 실행·비활성)와 LAB 자격 증명 2개는 n8n에 남아 있습니다. CLI로는 워크플로를 지울 수 없어 n8n 화면에서 보관 → 삭제해야 합니다.

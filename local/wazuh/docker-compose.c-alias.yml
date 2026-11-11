@@ -1,0 +1,7 @@
+# 선택: 팀 워크플로(haedam-15·17)가 C의 Wazuh API를 https://10.250.0.3:55000으로 고정해 부르므로,
+# 이 PC의 VMnet11에 10.250.0.3 별칭을 붙인 경우에만 manager API를 그 주소에도 연다(워크플로는 바꾸지 않음).
+# 별칭 추가(관리자): New-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet11" -IPAddress 10.250.0.3 -PrefixLength 24
+services:
+  wazuh.manager:
+    ports:
+      - "${C_ALIAS_IP:-10.250.0.3}:55000:55000"
