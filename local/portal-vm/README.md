@@ -35,8 +35,6 @@
 
 - ~~pfSense를 거치는 접속~~ → 공격자 VM으로 확인함(`local/attacker-vm/README.md`).
 - 111 계정 잠금 경로, haedam-17(토큰 발급 분리판)을 거치는 haedam-15 신판 — 이 PC의 haedam-15는 아직 스스로 로그인하는 구판입니다.
-- 이번 S7 n8n 시험의 Graylog 554·553·550 경보(API 직접 시험 때는 확인했고 같은 경로라 같을 것으로 보지만 이번 실행은 보지 않음).
-- VM 재부팅 뒤 자동 시작(포털·agent).
 
 ## 주의
 
@@ -97,4 +95,14 @@
 
 원복: 시험 계정의 비밀번호를 바꾸지 않으려고 `reset` API 대신 VM의 SQLite에서 `citizen_demo`의 `locked`만 0으로 되돌림(실습 VM 한정 조치). haedam-13은 백업으로 다시 반입·게시해 `haedam-portal-response`로 되돌렸고 활성 확인, 임시 워크플로 4개는 삭제함.
 
-확인하지 못한 것: 잠긴 계정으로 실제 로그인이 401이 되는지(시험 계정 비밀번호를 쓰지 않았음 — 코드상 `user.locked`면 401), 기존 세션 회수(시험 때 열린 세션 없음), Graylog의 `auth.account_locked` 이벤트.
+확인하지 못한 것: 잠긴 계정으로 실제 로그인이 401이 되는지(시험 계정 비밀번호를 쓰지 않았음 — 코드상 `user.locked`면 401), 기존 세션 회수(시험 때 열린 세션 없음), ~~Graylog의 `auth.account_locked` 이벤트~~ → 아래에서 확인.
+
+## 11/11 오후 확인 (Graylog 실측·재부팅 자동 시작)
+
+Graylog 검색은 OpenSearch에 직접 읽기 질의(`docker exec soc-opensearch curl localhost:9200/graylog_*/_search`, `gl2_receive_timestamp` 기준)로 했습니다.
+
+- n8n S7 시험 경보(agent 010, Wazuh 스트림): 553 격리 삭제 `sha256_after 170b4b6a…`(격리 전 해시와 같음) → 550 변조 `2aca4626…→debaf8dc…` → 550 복구 `debaf8dc…→2aca4626…`(기준본). n8n 실행 뒤 1초 안팎.
+- 111 시험: 포털 GELF `auth.account_locked` `username=citizen_demo` 2건(잠금 실행 2번, 같은 키 재요청은 포털이 저장된 응답만 돌려줘 이벤트 없음).
+- **포털 VM 재부팅**: `haedam-portal`·`wazuh-agent` 둘 다 enabled, 부팅 직후 agent `Connected to the server`, 포털 health 200(NRestarts=0), `s7_restore.py verify` ok, 공격자 → pfSense → 포털 200.
+- **pfSense 재부팅**(Diagnostics에서 `/etc/rc.reboot`, 약 1분): 공격자 → 포털 200, 공격자 SYN → `203.0.113.1:80`에 Suricata `9901102` 경보가 Graylog `suricata Raw TCP`에 들어옴(= Suricata와 `haedam_eve_forward.sh` 자동 시작), 방화벽 로그 Graylog 수신 계속, 차단 도구 SSH 응답. 재부팅 뒤 화면 세션은 끊겨 프로세스 목록은 직접 보지 않음.
+- 남은 것: 잠긴 계정 로그인 401 실측(시험 계정 비밀번호 필요), 호스트(Windows) 재부팅 뒤 Docker·VM 자동 시작은 시험 안 함.
