@@ -74,3 +74,15 @@ pfSense는 컨테이너로 돌릴 수 없어 VMware Workstation VM으로 둡니�
 - 정리: 임시 규칙은 비활성화(Disabled)만 했습니다(이 브라우저 창에서 삭제 확인 창이 열리지 않음). WAN은 다시 닫힘(`.100` 접속 불가 확인). 남은 일: 임시 규칙 삭제, `.22` 별칭 제거(관리자 권한), 도구 저널 `state.json` pending 정리(root 쉘).
 - 참고: pfSense 시계가 실제 UTC보다 약 9시간 빠르게 표시됩니다(VM 재부팅 뒤 확인, 원인 미확인). `admin` 기본 비밀번호 경고가 떠 있습니다.
 
+## 11/11 Suricata 설치와 EVE → Graylog 5515 (실제 수신 확인)
+
+- **VM 변경**: RAM 1GB→2GB, 설치용 NAT NIC(`ethernet2`, VMnet8) 추가. 처음 만든 vmx에 PCI 브리지가 없어 NIC를 못 붙여, VMware 표준 배치(브리지 17·21~24, NIC 32·33·34, SATA 35)로 슬롯을 지정했습니다. NIC 순서는 유지(em0=WAN, em1=LAN, em2=OPT1). 원래 vmx는 `_vm/pfsense/haedam-pfsense.vmx.bak-1111`.
+- **설치용 인터넷(임시)**: OPT1(em2) DHCP(`192.168.251.129`, gw `.2`) + 기본 게이트웨이 OPT1 + DNS `8.8.8.8`/remote. 로컬 resolver로는 이름 해석이 안 됐습니다. 설치 뒤 **모두 되돌림**: DNS 원래대로, 기본 게이트웨이 원래 값 `WANGW`, OPT1 비활성, VMware에서 em2 연결 끊고 `startConnected=FALSE`. 확인: pfSense → 8.8.8.8 불가.
+- **Suricata**: `pfSense-pkg-suricata` 설치, WAN(em0)에 IDS로만(차단 모드 끔), EVE JSON 파일 출력. 하드웨어 체크섬 오프로딩 끔. ET 등 대형 규칙 세트는 받지 않고 실습용 사용자 규칙 2개만 사용:
+  - `sid:9901102` `HAEDAM LAB test TCP SYN to WAN http` — `203.0.113.0/24` → `203.0.113.1:80` SYN
+  - `sid:9901101` `HAEDAM LAB S8 TCP SYN port scan suspected` — 같은 출발지의 SYN 10초 20회 이상(threshold both)
+- **전달기**: `lab/pfsense/eve_forward.py`를 pfSense `/root/haedam-eve-forward.py`로, `lab/pfsense/haedam_eve_forward.sh`를 `/usr/local/etc/rc.d/`에 두어 부팅 때 `daemon -r`로 실행. EVE에서 `event_type=alert` 줄만 한 줄 JSON+LF로 `10.250.0.100:5515`(B와 10/23 합의한 형식)로 보냅니다. 파일 끝부터 읽고(과거분 재전송 없음), 연결 실패 시 3번 재시도 후 버림(syslog `stats`에 집계). 해시 `9002e2a4...bd343` 일치 확인.
+- **확인됨**: WAN 80 SYN → SID 9901102 경보 → Graylog `suricata Raw TCP` 입력 → `suri_*` 필드 파싱, 메시지 `[Suricata 9901102] ...`, 스트림 1개(`6adac3be...`)에 저장. 30개 포트 SYN → SID 9901101 1건. 최근 15분 Graylog 3건(9901102×2, 9901101×1).
+- **못한 것/주의**: Graylog `source`가 Docker 변환 주소 `172.23.0.1`로 보여 송신 장비 구분은 `suri_in_iface`·내용으로 해야 합니다. Docker가 꺼진 동안의 경보는 재시도 후 버려집니다. 재부팅 뒤 Suricata·전달기 자동 시작은 아직 시험하지 않았습니다. 기본 게이트웨이 `WANGW`(`255.255.255.0`)는 원래부터 잘못된 값이라 지우는 편이 맞습니다(이번엔 원상 유지만 함). 규칙 업데이트(ET Open)는 인터넷이 필요해 하지 않았습니다.
+- 도구 저널 pending은 `/root/state.json.bak-1111b`로 옮겨 `status`가 다시 `ok`입니다.
+
