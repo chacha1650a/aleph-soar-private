@@ -1,0 +1,9 @@
+# 선택: 실습망(VMnet11, 호스트 10.250.0.100)에 있는 agent(포털 VM 10.250.0.2)가 manager에 붙도록
+# 1514(수집)·1515(등록)를 실습망 주소에도 연다. 기존 127.0.0.1 게시는 그대로 둔다.
+# VMnet11 어댑터에 10.250.0.100이 없는 PC에서는 이 파일을 쓰지 않는다(게시 실패로 컨테이너가 안 뜸).
+# 사용: docker compose -f upstream/single-node/docker-compose.yml -f docker-compose.override.yml -f docker-compose.agent-lan.yml up -d
+services:
+  wazuh.manager:
+    ports:
+      - "${AGENT_BIND_IP:-10.250.0.100}:1514:1514"
+      - "${AGENT_BIND_IP:-10.250.0.100}:1515:1515"
