@@ -82,3 +82,19 @@
 되돌림: haedam-12·15·17을 시험 전 백업(`%USERPROFILE%\.haedam-lab\n8n-backup\*-before-lab-1111.json`)으로 다시 반입하고 12·15를 다시 게시함. 확인: haedam-12 → `haedam-portal-response`, haedam-15 → `wazuh-api (n8n-s7)`, 둘 다 활성, haedam-17 비활성.
 
 정리: 임시 워크플로 5개(`tmpLab1111H12Blk`·`H12Unb`·`H15Q`·`H15R`·`WzLogin`)는 n8n 화면 세션으로 보관 → 삭제함(남은 것 0개, 팀 워크플로 상태 그대로). LAB 자격 증명 2개는 다음 시험용으로 남겨 둠(어느 노드에도 연결 안 됨).
+
+### 11/11 111 계정 잠금(haedam-13) 시험
+
+같은 방식(시험 동안만 `포털 호출 1·2` 노드를 `haedam-portal-response LAB`에 연결, 백업 `haedam-13-before-lab-1111.json`)으로 n8n에서 haedam-13을 불렀습니다. haedam-13은 **잠금만 자동**이고 해제는 사람이 `POST /accounts/<id>/reset`(새 비밀번호 필요)으로 하는 설계입니다.
+
+| 입력 | n8n 결과 | 포털 DB `users.locked` |
+| --- | --- | --- |
+| `citizen_demo`, `dry_run` 생략(기본 true) | `dry_run`, 포털 호출 안 함 | 0 그대로 |
+| `citizen_demo`, ticket `T-LAB-1111-111`, `dry_run:false` | `applied`(`200 changed:true`), 키 `T-LAB-1111-111-111-citizen_demo-lock` | **1** |
+| 같은 입력 다시 | `applied` — 포털이 같은 Idempotency-Key의 저장된 응답을 돌려줌(새 처리 없음) | 1 |
+| 다른 ticket `T-LAB-1111-112` | `already_applied`(`changed:false`) | 1 |
+| `admin_demo` | `rejected`(`403`, 관리자 계정은 자동 대응 제외) | 0 |
+
+원복: 시험 계정의 비밀번호를 바꾸지 않으려고 `reset` API 대신 VM의 SQLite에서 `citizen_demo`의 `locked`만 0으로 되돌림(실습 VM 한정 조치). haedam-13은 백업으로 다시 반입·게시해 `haedam-portal-response`로 되돌렸고 활성 확인, 임시 워크플로 4개는 삭제함.
+
+확인하지 못한 것: 잠긴 계정으로 실제 로그인이 401이 되는지(시험 계정 비밀번호를 쓰지 않았음 — 코드상 `user.locked`면 401), 기존 세션 회수(시험 때 열린 세션 없음), Graylog의 `auth.account_locked` 이벤트.
