@@ -81,4 +81,4 @@
 
 되돌림: haedam-12·15·17을 시험 전 백업(`%USERPROFILE%\.haedam-lab\n8n-backup\*-before-lab-1111.json`)으로 다시 반입하고 12·15를 다시 게시함. 확인: haedam-12 → `haedam-portal-response`, haedam-15 → `wazuh-api (n8n-s7)`, 둘 다 활성, haedam-17 비활성.
 
-남은 것: 임시 워크플로 5개(`tmpLab1111H12Blk`·`H12Unb`·`H15Q`·`H15R`·`WzLogin`, 모두 수동 실행·비활성)와 LAB 자격 증명 2개는 n8n에 남아 있습니다. CLI로는 워크플로를 지울 수 없어 n8n 화면에서 보관 → 삭제해야 합니다.
+정리: 임시 워크플로 5개(`tmpLab1111H12Blk`·`H12Unb`·`H15Q`·`H15R`·`WzLogin`)는 n8n 화면 세션으로 보관 → 삭제함(남은 것 0개, 팀 워크플로 상태 그대로). LAB 자격 증명 2개는 다음 시험용으로 남겨 둠(어느 노드에도 연결 안 됨).
