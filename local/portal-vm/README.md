@@ -105,4 +105,16 @@ Graylog 검색은 OpenSearch에 직접 읽기 질의(`docker exec soc-opensearch
 - 111 시험: 포털 GELF `auth.account_locked` `username=citizen_demo` 2건(잠금 실행 2번, 같은 키 재요청은 포털이 저장된 응답만 돌려줘 이벤트 없음).
 - **포털 VM 재부팅**: `haedam-portal`·`wazuh-agent` 둘 다 enabled, 부팅 직후 agent `Connected to the server`, 포털 health 200(NRestarts=0), `s7_restore.py verify` ok, 공격자 → pfSense → 포털 200.
 - **pfSense 재부팅**(Diagnostics에서 `/etc/rc.reboot`, 약 1분): 공격자 → 포털 200, 공격자 SYN → `203.0.113.1:80`에 Suricata `9901102` 경보가 Graylog `suricata Raw TCP`에 들어옴(= Suricata와 `haedam_eve_forward.sh` 자동 시작), 방화벽 로그 Graylog 수신 계속, 차단 도구 SSH 응답. 재부팅 뒤 화면 세션은 끊겨 프로세스 목록은 직접 보지 않음.
-- 남은 것: 잠긴 계정 로그인 401 실측(시험 계정 비밀번호 필요), 호스트(Windows) 재부팅 뒤 Docker·VM 자동 시작은 시험 안 함.
+- 남은 것: 호스트(Windows) 재부팅 뒤 Docker·VM 자동 시작은 시험 안 함.
+
+### 11/11 잠긴 계정 로그인 실측
+
+사용자가 직접 가입한 시험 계정 `test1234`(citizen)로, 비밀번호는 사용자가 화면에서만 입력했습니다.
+
+1. 로그인 성공 → Graylog `auth.login_succeeded` 200.
+2. 대응 API로 잠금(`POST /api/v1/response/accounts/lock`, 실습 키, Idempotency-Key `T-LAB-1111-401-111-test1234-lock`) → `changed:true, locked:true, revoked_sessions:1`, Graylog `auth.account_locked`.
+3. 로그인돼 있던 브라우저 세션은 즉시 끊김(`/api/v1/auth/me` → `user: null`).
+4. 같은 비밀번호로 로그인 → 실패, Graylog `auth.login_failed` **401** 3건(`src_ip 10.250.0.100`).
+5. VM SQLite에서 `locked=0`으로 해제 → 다시 로그인 성공.
+
+주의: 실패도 로그인 시도 한도(5분에 5회, 출발지 IP 기준)에 들어가므로 시험 중 실패가 쌓이면 429가 납니다.
